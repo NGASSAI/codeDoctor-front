@@ -8,11 +8,12 @@ import {
 } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import {
-  obtenirExercices,
-  type CategorieExercice,
-  type Exercice,
-} from "../../services/exercice.service";
+import { obtenirExercices } from "../../services/exercice.service";
+
+import type {
+  CategorieExercice,
+  Exercice,
+} from "../../types/exercice";
 
 const CATEGORIES: {
   valeur: CategorieExercice | "";
@@ -380,7 +381,7 @@ function ExerciceCard({
       </div>
 
       <a
-        href={`/dashboard/exercices/${exercice.id}`}
+        href={`/exercices/${exercice.id}`}
         className="
           mt-5
           inline-flex

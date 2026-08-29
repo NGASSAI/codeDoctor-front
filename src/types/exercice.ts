@@ -1,12 +1,11 @@
+
 export type CategorieExercice =
   | "JAVASCRIPT"
   | "TYPESCRIPT"
   | "REACT"
-  | "NODEJS"
-  | "PYTHON"
-  | "PHP"
-  | "JAVA"
-  | "SQL";
+  | "HTTP"
+  | "API"
+  | "HTML_CSS";
 
 export type DifficulteExercice =
   | "FACILE"
@@ -16,7 +15,7 @@ export type DifficulteExercice =
 export interface Exercice {
   id: string;
   title: string;
-  category: string;
+  category: CategorieExercice;
   difficulty: string;
   buggyCode: string;
   createdAt: string;
@@ -26,21 +25,6 @@ export interface ExerciceDetail extends Exercice {
   hint1: string;
   hint2: string;
   hint3: string;
-}
-
-export interface TentativeExercice {
-  id: string;
-  exerciseId: string;
-  userAnswer: string;
-  correct: boolean;
-  hintsUsed: number;
-  createdAt: string;
-}
-
-export interface ProgressionExercice {
-  id: string;
-  categorie: string;
-  compteur: number;
 }
 
 export interface ListeExercicesResponse {
@@ -58,13 +42,19 @@ export interface IndiceResponse {
   indice: string;
 }
 
-export interface TentativesResponse {
-  tentatives: TentativeExercice[];
-  total: number;
+export interface TentativeExercice {
+  id: string;
+  exerciseId: string;
+  userAnswer?: string;
+  correct: boolean;
+  hintsUsed: number;
+  createdAt: string;
 }
 
-export interface ProgressionResponse {
-  progression: ProgressionExercice[];
+export interface ProgressionExercice {
+  id: string;
+  categorie: CategorieExercice;
+  compteur: number;
 }
 
 export interface TentativeResponse {
@@ -79,3 +69,13 @@ export interface TentativeResponse {
   };
   progression: ProgressionExercice | null;
 }
+
+export interface TentativesResponse {
+  tentatives: TentativeExercice[];
+  total: number;
+}
+
+export interface ProgressionResponse {
+  progression: ProgressionExercice[];
+}
+

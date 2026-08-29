@@ -1,12 +1,16 @@
 
+import { useEffect, useMemo, useState } from "react";
 import {
+  AlertCircle,
   ArrowRight,
   BookOpen,
-  ChevronRight,
+  CheckCircle2,
   Code2,
+  Loader2,
   MessageSquare,
   Settings,
   Sparkles,
+  Target,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -14,10 +18,40 @@ import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import { useAuthStore } from "../../stores/auth.store";
 
+import {
+  obtenirMaProgression,
+  obtenirMesTentatives,
+} from "../../services/exercice.service";
+
+import type {
+  ProgressionExercice,
+  TentativeExercice,
+} from "../../types/exercice";
+
+const CATEGORIES = [
+  { code: "JAVASCRIPT", label: "JavaScript" },
+  { code: "TYPESCRIPT", label: "TypeScript" },
+  { code: "REACT", label: "React" },
+  { code: "HTTP", label: "HTTP" },
+  { code: "API", label: "API" },
+  { code: "HTML_CSS", label: "HTML / CSS" },
+] as const;
+
 export default function DashboardPage() {
   const utilisateur = useAuthStore(
     (state) => state.utilisateur
   );
+
+  const [progression, setProgression] = useState<
+    ProgressionExercice[]
+  >([]);
+
+  const [tentatives, setTentatives] = useState<
+    TentativeExercice[]
+  >([]);
+
+  const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState("");
 
   const nomUtilisateur =
     utilisateur?.displayName?.trim() ||
@@ -27,16 +61,99 @@ export default function DashboardPage() {
   const initiale =
     nomUtilisateur.charAt(0).toUpperCase();
 
+  useEffect(() => {
+    let actif = true;
+
+    async function chargerDonnees() {
+      try {
+        setChargement(true);
+        setErreur("");
+
+        const [
+          resultatProgression,
+          resultatTentatives,
+        ] = await Promise.all([
+          obtenirMaProgression(),
+          obtenirMesTentatives(),
+        ]);
+
+        if (!actif) {
+          return;
+        }
+
+        setProgression(resultatProgression.progression);
+        setTentatives(resultatTentatives.tentatives);
+      } catch (error) {
+        console.error(
+          "Erreur lors du chargement du dashboard :",
+          error
+        );
+
+        if (actif) {
+          setErreur(
+            "Impossible de récupérer vos statistiques."
+          );
+        }
+      } finally {
+        if (actif) {
+          setChargement(false);
+        }
+      }
+    }
+
+    void chargerDonnees();
+
+    return () => {
+      actif = false;
+    };
+  }, []);
+
+  const exercicesReussis = useMemo(() => {
+    return progression.reduce(
+      (total, element) =>
+        total + element.compteur,
+      0
+    );
+  }, [progression]);
+
+  const totalTentatives = tentatives.length;
+
+  const tauxReussite = useMemo(() => {
+    if (totalTentatives === 0) {
+      return 0;
+    }
+
+    const reussies = tentatives.filter(
+      (tentative) => tentative.correct
+    ).length;
+
+    return Math.round(
+      (reussies / totalTentatives) * 100
+    );
+  }, [tentatives, totalTentatives]);
+
+  const progressionParCategorie = useMemo(() => {
+    return CATEGORIES.map((categorie) => {
+      const element = progression.find(
+        (item) =>
+          item.categorie === categorie.code
+      );
+
+      return {
+        ...categorie,
+        compteur: element?.compteur ?? 0,
+      };
+    });
+  }, [progression]);
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8">
-
       {/* =========================
           EN-TÊTE
       ========================== */}
 
       <section>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600">
               <Sparkles size={14} />
@@ -44,25 +161,23 @@ export default function DashboardPage() {
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Hello, {nomUtilisateur} 👋
+              Bonjour, {nomUtilisateur} 👋
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
               Bienvenue dans votre espace CodeDoctor.
-              Retrouvez vos activités, partagez vos
-              expériences et développez vos connaissances
-              techniques.
+              Suivez votre progression, entraînez-vous
+              et améliorez vos compétences techniques.
             </p>
           </div>
 
           <Link
-            to="/experiences"
+            to="/exercices"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
           >
             <BookOpen size={17} />
-            Explorer les expériences
+            Faire un exercice
           </Link>
-
         </div>
       </section>
 
@@ -72,9 +187,7 @@ export default function DashboardPage() {
 
       <Card className="overflow-hidden">
         <div className="flex flex-col gap-6 p-6 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
-
           <div className="flex items-center gap-4">
-
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-semibold text-white">
               {initiale}
             </div>
@@ -94,7 +207,6 @@ export default function DashboardPage() {
                 {utilisateur?.email}
               </p>
             </div>
-
           </div>
 
           <Link
@@ -103,11 +215,36 @@ export default function DashboardPage() {
           >
             <Settings size={16} />
             Paramètres
-            <ChevronRight size={15} />
+            <ArrowRight size={15} />
           </Link>
-
         </div>
       </Card>
+
+      {/* =========================
+          ERREUR
+      ========================== */}
+
+      {erreur && (
+        <Card className="border-red-200 bg-red-50 p-5">
+          <div className="flex items-start gap-3">
+            <AlertCircle
+              size={19}
+              className="mt-0.5 shrink-0 text-red-600"
+            />
+
+            <div>
+              <p className="text-sm font-medium text-red-700">
+                {erreur}
+              </p>
+
+              <p className="mt-1 text-xs text-red-600">
+                Vos autres fonctionnalités restent
+                accessibles.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* =========================
           STATISTIQUES
@@ -120,75 +257,162 @@ export default function DashboardPage() {
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Un aperçu de votre activité sur CodeDoctor.
+            Vos résultats réels enregistrés par CodeDoctor.
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {chargement ? (
+          <Card className="p-10">
+            <div className="flex flex-col items-center justify-center text-center">
+              <Loader2
+                size={28}
+                className="animate-spin text-zinc-400"
+              />
 
-          <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-                <BookOpen size={19} />
+              <p className="mt-3 text-sm font-medium text-zinc-700">
+                Chargement de vos statistiques...
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+                  <CheckCircle2 size={19} />
+                </div>
+
+                <span className="text-xs font-medium text-zinc-400">
+                  Réussite
+                </span>
               </div>
 
-              <span className="text-xs font-medium text-zinc-400">
-                Activité
-              </span>
-            </div>
+              <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
+                {exercicesReussis}
+              </p>
 
-            <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
-              0
-            </p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Exercices réussis
+              </p>
+            </Card>
 
-            <p className="mt-1 text-sm text-zinc-500">
-              Expériences partagées
-            </p>
-          </Card>
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+                  <Target size={19} />
+                </div>
 
-          <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-                <MessageSquare size={19} />
+                <span className="text-xs font-medium text-zinc-400">
+                  Entraînement
+                </span>
               </div>
 
-              <span className="text-xs font-medium text-zinc-400">
-                Communauté
-              </span>
-            </div>
+              <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
+                {totalTentatives}
+              </p>
 
-            <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
-              0
-            </p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Tentatives effectuées
+              </p>
+            </Card>
 
-            <p className="mt-1 text-sm text-zinc-500">
-              Discussions participées
-            </p>
-          </Card>
+            <Card className="p-6 sm:col-span-2 lg:col-span-1">
+              <div className="flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+                  <Code2 size={19} />
+                </div>
 
-          <Card className="p-6 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-start justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-                <Code2 size={19} />
+                <span className="text-xs font-medium text-zinc-400">
+                  Taux de réussite
+                </span>
               </div>
 
-              <span className="text-xs font-medium text-zinc-400">
-                Profil
-              </span>
-            </div>
+              <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
+                {tauxReussite}%
+              </p>
 
-            <p className="mt-6 text-3xl font-semibold tracking-tight text-zinc-950">
-              {utilisateur?.role === "ADMIN"
-                ? "Admin"
-                : "Membre"}
-            </p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Sur vos tentatives
+              </p>
+            </Card>
+          </div>
+        )}
+      </section>
+
+      {/* =========================
+          PROGRESSION
+      ========================== */}
+
+      <section>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-zinc-950">
+              Votre progression
+            </h2>
 
             <p className="mt-1 text-sm text-zinc-500">
-              Type de compte
+              Nombre d'exercices réussis par technologie.
             </p>
-          </Card>
+          </div>
 
+          <Link
+            to="/exercices"
+            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-950"
+          >
+            Voir les exercices
+            <ArrowRight size={15} />
+          </Link>
         </div>
+
+        {chargement ? (
+          <Card className="p-8">
+            <div className="flex items-center justify-center">
+              <Loader2
+                size={24}
+                className="animate-spin text-zinc-400"
+              />
+            </div>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {progressionParCategorie.map(
+              (categorie) => (
+                <Card
+                  key={categorie.code}
+                  className="p-5"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-zinc-900">
+                        {categorie.label}
+                      </h3>
+
+                      <p className="mt-1 text-xs text-zinc-400">
+                        Exercices réussis
+                      </p>
+                    </div>
+
+                    <span className="text-2xl font-semibold text-zinc-950">
+                      {categorie.compteur}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-100">
+                    <div
+                      className="h-full rounded-full bg-zinc-900 transition-all"
+                      style={{
+                        width:
+                          categorie.compteur > 0
+                            ? "100%"
+                            : "0%",
+                      }}
+                    />
+                  </div>
+                </Card>
+              )
+            )}
+          </div>
+        )}
       </section>
 
       {/* =========================
@@ -202,21 +426,18 @@ export default function DashboardPage() {
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Accédez rapidement aux principales fonctionnalités.
+            Accédez rapidement aux principales
+            fonctionnalités.
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-
-          {/* Expériences */}
-
           <Link
-            to="/experiences"
+            to="/exercices"
             className="group"
           >
             <Card className="h-full p-6 transition duration-200 group-hover:-translate-y-0.5 group-hover:border-zinc-300 group-hover:shadow-md">
               <div className="flex items-center justify-between">
-
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-950 text-white">
                   <BookOpen size={19} />
                 </div>
@@ -225,7 +446,33 @@ export default function DashboardPage() {
                   size={17}
                   className="text-zinc-400 transition-transform group-hover:translate-x-1 group-hover:text-zinc-950"
                 />
+              </div>
 
+              <h3 className="mt-6 text-base font-semibold text-zinc-950">
+                Exercices
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-zinc-500">
+                Corrigez des bugs réalistes et développez
+                vos compétences de programmation.
+              </p>
+            </Card>
+          </Link>
+
+          <Link
+            to="/experiences"
+            className="group"
+          >
+            <Card className="h-full p-6 transition duration-200 group-hover:-translate-y-0.5 group-hover:border-zinc-300 group-hover:shadow-md">
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+                  <MessageSquare size={19} />
+                </div>
+
+                <ArrowRight
+                  size={17}
+                  className="text-zinc-400 transition-transform group-hover:translate-x-1 group-hover:text-zinc-950"
+                />
               </div>
 
               <h3 className="mt-6 text-base font-semibold text-zinc-950">
@@ -239,46 +486,12 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          {/* Discussions */}
-
-          <Link
-            to="/discussions"
-            className="group"
-          >
-            <Card className="h-full p-6 transition duration-200 group-hover:-translate-y-0.5 group-hover:border-zinc-300 group-hover:shadow-md">
-              <div className="flex items-center justify-between">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-                  <MessageSquare size={19} />
-                </div>
-
-                <ArrowRight
-                  size={17}
-                  className="text-zinc-400 transition-transform group-hover:translate-x-1 group-hover:text-zinc-950"
-                />
-
-              </div>
-
-              <h3 className="mt-6 text-base font-semibold text-zinc-950">
-                Discussions
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-zinc-500">
-                Échangez avec la communauté autour des
-                problématiques de développement.
-              </p>
-            </Card>
-          </Link>
-
-          {/* Paramètres */}
-
           <Link
             to="/parametres"
             className="group"
           >
             <Card className="h-full p-6 transition duration-200 group-hover:-translate-y-0.5 group-hover:border-zinc-300 group-hover:shadow-md">
               <div className="flex items-center justify-between">
-
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
                   <Settings size={19} />
                 </div>
@@ -287,7 +500,6 @@ export default function DashboardPage() {
                   size={17}
                   className="text-zinc-400 transition-transform group-hover:translate-x-1 group-hover:text-zinc-950"
                 />
-
               </div>
 
               <h3 className="mt-6 text-base font-semibold text-zinc-950">
@@ -300,7 +512,6 @@ export default function DashboardPage() {
               </p>
             </Card>
           </Link>
-
         </div>
       </section>
 
@@ -310,35 +521,32 @@ export default function DashboardPage() {
 
       <Card className="border-zinc-900 bg-zinc-950 text-white">
         <div className="flex flex-col gap-5 p-6 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
-
           <div>
             <p className="text-sm font-medium text-zinc-400">
-              Commencez à contribuer
+              Continuez votre progression
             </p>
 
             <h2 className="mt-2 text-xl font-semibold tracking-tight">
-              Une erreur vous a déjà fait perdre du temps ?
+              Chaque bug corrigé est une compétence gagnée.
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-              Partagez votre expérience avec la communauté.
-              Votre solution pourrait aider un autre
-              développeur confronté au même problème.
+              Entraînez-vous régulièrement, utilisez les
+              indices uniquement lorsque nécessaire et
+              analysez vos erreurs pour progresser.
             </p>
           </div>
 
           <Link
-            to="/experiences"
+            to="/exercices"
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-100"
           >
-            <Sparkles size={16} />
-            Découvrir
+            <BookOpen size={16} />
+            Continuer
             <ArrowRight size={16} />
           </Link>
-
         </div>
       </Card>
-
     </div>
   );
 }

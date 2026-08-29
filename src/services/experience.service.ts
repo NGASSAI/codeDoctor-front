@@ -116,3 +116,66 @@ export async function supprimerExperience(
 
   return response.data;
 }
+import type {
+  CommentaireExperience,
+} from "../types/experience";
+
+/**
+ * Récupérer les commentaires d'une expérience.
+ *
+ * GET /api/experiences/:experienceId/commentaires
+ */
+export async function obtenirCommentaires(
+  experienceId: string
+): Promise<CommentaireExperience[]> {
+  const response =
+    await api.get<{
+      commentaires: CommentaireExperience[];
+    }>(
+      `/experiences/${encodeURIComponent(
+        experienceId
+      )}/commentaires`
+    );
+
+  return response.data.commentaires;
+}
+
+/**
+ * Ajouter un commentaire.
+ *
+ * POST /api/experiences/:experienceId/commentaires
+ */
+export async function ajouterCommentaire(
+  experienceId: string,
+  contenu: string
+): Promise<CommentaireExperience> {
+  const response =
+    await api.post<{
+      message: string;
+      commentaire: CommentaireExperience;
+    }>(
+      `/experiences/${encodeURIComponent(
+        experienceId
+      )}/commentaires`,
+      {
+        contenu,
+      }
+    );
+
+  return response.data.commentaire;
+}
+
+/**
+ * Supprimer son propre commentaire.
+ *
+ * DELETE /api/commentaires/:id
+ */
+export async function supprimerCommentaire(
+  commentaireId: string
+): Promise<void> {
+  await api.delete(
+    `/commentaires/${encodeURIComponent(
+      commentaireId
+    )}`
+  );
+}

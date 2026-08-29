@@ -1,111 +1,27 @@
+
 import { api } from "../lib/api";
 
-/**
- * Catégories réellement utilisées par le backend.
- *
- * Ces valeurs correspondent à l'enum Prisma Category
- * utilisé dans exercice.controleur.ts.
- */
-export type CategorieExercice =
-  |  "JAVASCRIPT"
-  | "TYPESCRIPT"
-  | "REACT"
-  | "HTTP"
-  | "API"
-  | "HTML_CSS";
-
-/**
- * Difficulté d'un exercice.
- *
- * Le backend accepte une string pour le moment.
- */
-export type DifficulteExercice =
-  | "FACILE"
-  | "MOYEN"
-  | "DIFFICILE";
-
-export interface Exercice {
-  id: string;
-  title: string;
-  category: string;
-  difficulty: string;
-  buggyCode: string;
-  createdAt: string;
-}
-
-export interface ExerciceDetail extends Exercice {
-  hint1: string;
-  hint2: string;
-  hint3: string;
-}
-
-export interface ListeExercicesResponse {
-  exercices: Exercice[];
-  total: number;
-}
-
-export interface ExerciceResponse {
-  exercice: ExerciceDetail;
-}
-
-export interface IndiceResponse {
-  exerciceId: string;
-  numeroIndice: number;
-  indice: string;
-}
-
-export interface TenterExerciceInput {
-  reponse: string;
-  indicesUtilises?: number;
-}
-
-export interface Tentative {
-  id: string;
-  exerciseId: string;
-  correct: boolean;
-  hintsUsed: number;
-  createdAt: string;
-}
-
-export interface Progression {
-  id: string;
-  categorie: string;
-  compteur: number;
-}
-
-export interface TenterExerciceResponse {
-  succes: boolean;
-  correct: boolean;
-  tentative: Tentative;
-  progression: Progression | null;
-}
-
-export interface TentativeUtilisateur {
-  id: string;
-  exerciseId: string;
-  userAnswer: string;
-  correct: boolean;
-  hintsUsed: number;
-  createdAt: string;
-}
-
-export interface MesTentativesResponse {
-  tentatives: TentativeUtilisateur[];
-  total: number;
-}
-
-export interface MaProgressionResponse {
-  progression: Progression[];
-}
+import type {
+  CategorieExercice,
+  DifficulteExercice,
+  Exercice,
+  ExerciceDetail,
+  ListeExercicesResponse,
+  ExerciceResponse,
+  IndiceResponse,
+  TentativesResponse,
+  ProgressionResponse,
+  TentativeResponse,
+} from "../types/exercice";
 
 /**
  * GET /api/exercices
  *
- * Liste des exercices.
+ * Liste les exercices disponibles.
  */
 export async function obtenirExercices(
   categorie?: CategorieExercice,
-  difficulte?: string
+  difficulte?: DifficulteExercice
 ): Promise<ListeExercicesResponse> {
   const params: Record<string, string> = {};
 
@@ -117,13 +33,12 @@ export async function obtenirExercices(
     params.difficulte = difficulte;
   }
 
-  const response =
-    await api.get<ListeExercicesResponse>(
-      "/exercices",
-      {
-        params,
-      }
-    );
+  const response = await api.get<ListeExercicesResponse>(
+    "/exercices",
+    {
+      params,
+    }
+  );
 
   return response.data;
 }
@@ -131,15 +46,16 @@ export async function obtenirExercices(
 /**
  * GET /api/exercices/:id
  *
- * Récupérer un exercice.
+ * Récupère un exercice.
+ *
+ * La solution n'est jamais envoyée au frontend.
  */
 export async function obtenirExercice(
   id: string
 ): Promise<ExerciceDetail> {
-  const response =
-    await api.get<ExerciceResponse>(
-      `/exercices/${encodeURIComponent(id)}`
-    );
+  const response = await api.get<ExerciceResponse>(
+    `/exercices/${encodeURIComponent(id)}`
+  );
 
   return response.data.exercice;
 }
@@ -147,18 +63,17 @@ export async function obtenirExercice(
 /**
  * GET /api/exercices/:id/indices/:numero
  *
- * Récupérer un indice.
+ * Récupère un indice précis.
  */
 export async function obtenirIndice(
   exerciceId: string,
   numero: number
 ): Promise<IndiceResponse> {
-  const response =
-    await api.get<IndiceResponse>(
-      `/exercices/${encodeURIComponent(
-        exerciceId
-      )}/indices/${numero}`
-    );
+  const response = await api.get<IndiceResponse>(
+    `/exercices/${encodeURIComponent(
+      exerciceId
+    )}/indices/${numero}`
+  );
 
   return response.data;
 }
@@ -166,14 +81,14 @@ export async function obtenirIndice(
 /**
  * POST /api/exercices/:id/tenter
  *
- * Soumettre une réponse.
+ * Soumet une correction.
  */
 export async function tenterExercice(
   exerciceId: string,
   reponse: string,
   indicesUtilises: number
-) {
-  const response = await api.post(
+): Promise<TentativeResponse> {
+  const response = await api.post<TentativeResponse>(
     `/exercices/${encodeURIComponent(exerciceId)}/tenter`,
     {
       reponse,
@@ -183,23 +98,25 @@ export async function tenterExercice(
 
   return response.data;
 }
+
 /**
  * GET /api/exercices/mes-tentatives
  *
- * Historique des tentatives.
+ * Récupère l'historique des tentatives de l'utilisateur.
  */
 export async function obtenirMesTentatives(
   exerciceId?: string
-): Promise<MesTentativesResponse> {
-  const response =
-    await api.get<MesTentativesResponse>(
-      "/exercices/mes-tentatives",
-      {
-        params: exerciceId
-          ? { exerciceId }
-          : undefined,
-      }
-    );
+): Promise<TentativesResponse> {
+  const response = await api.get<TentativesResponse>(
+    "/exercices/mes-tentatives",
+    exerciceId
+      ? {
+          params: {
+            exerciceId,
+          },
+        }
+      : undefined
+  );
 
   return response.data;
 }
@@ -207,13 +124,23 @@ export async function obtenirMesTentatives(
 /**
  * GET /api/exercices/ma-progression
  *
- * Progression de l'utilisateur.
+ * Récupère la progression globale.
  */
-export async function obtenirMaProgression(): Promise<MaProgressionResponse> {
-  const response =
-    await api.get<MaProgressionResponse>(
-      "/exercices/ma-progression"
-    );
+export async function obtenirMaProgression(): Promise<ProgressionResponse> {
+  const response = await api.get<ProgressionResponse>(
+    "/exercices/ma-progression"
+  );
 
   return response.data;
 }
+
+/**
+ * Permet de réutiliser les types du module
+ * sans les redéfinir dans les composants.
+ */
+export type {
+  CategorieExercice,
+  DifficulteExercice,
+  Exercice,
+  ExerciceDetail,
+};

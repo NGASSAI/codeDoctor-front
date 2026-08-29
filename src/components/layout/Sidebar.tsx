@@ -1,11 +1,14 @@
-
 import {
+  Bell,
   BookOpen,
+  BrainCircuit,
   CreditCard,
+  History,
   Home,
-  MessageSquare,
+  MessageCircle,
   Settings,
   ShieldCheck,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
@@ -31,6 +34,11 @@ export default function Sidebar({
           path: "/admin",
         },
         {
+  label: "Discussions",
+  icon: MessageCircle,
+  path: "/discussions",
+},
+        {
           label: "Utilisateurs",
           icon: Users,
           path: "/admin/utilisateurs",
@@ -53,19 +61,39 @@ export default function Sidebar({
       ]
     : [
         {
-          label: "Accueil",
+          label: "Tableau de bord",
           icon: Home,
           path: "/dashboard",
         },
         {
-          label: "Expériences",
-          icon: BookOpen,
-          path: "/experiences",
+          label: "Diagnostic",
+          icon: BrainCircuit,
+          path: "/diagnostic",
         },
         {
-          label: "Discussions",
-          icon: MessageSquare,
-          path: "/discussions",
+          label: "Exercices",
+          icon: BookOpen,
+          path: "/exercices",
+        },
+        {
+          label: "Historique",
+          icon: History,
+          path: "/historique",
+        },
+        {
+          label: "Notifications",
+          icon: Bell,
+          path: "/notifications",
+        },
+        {
+          label: "Premium",
+          icon: CreditCard,
+          path: "/premium",
+        },
+        {
+          label: "Profil",
+          icon: UserRound,
+          path: "/profil",
         },
         {
           label: "Paramètres",
@@ -95,11 +123,9 @@ export default function Sidebar({
         `}
       >
         <div className="flex h-full flex-col">
-
           {/* En-tête mobile */}
 
           <div className="flex items-center justify-between px-4 py-5 lg:hidden">
-
             <span className="text-sm font-semibold text-zinc-900">
               Menu
             </span>
@@ -119,29 +145,26 @@ export default function Sidebar({
             >
               <X size={19} />
             </button>
-
           </div>
-
 
           {/* Navigation */}
 
-          <div className="px-3 pt-6 lg:pt-7">
-
-            <p className="
-              px-3
-              text-[11px]
-              font-semibold
-              uppercase
-              tracking-[0.16em]
-              text-zinc-400
-            ">
+          <div className="flex-1 overflow-y-auto px-3 pt-6 lg:pt-7">
+            <p
+              className="
+                px-3
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-[0.16em]
+                text-zinc-400
+              "
+            >
               {admin ? "Administration" : "Navigation"}
             </p>
 
             <nav className="mt-3 space-y-1">
-
               {items.map((item) => {
-
                 const Icon = item.icon;
 
                 return (
@@ -149,7 +172,17 @@ export default function Sidebar({
                     key={item.path}
                     to={item.path}
                     onClick={onClose}
-                    end={item.path === "/admin"}
+                    end={
+                      item.path === "/admin" ||
+                      item.path === "/dashboard" ||
+                      item.path === "/exercices" ||
+                      item.path === "/historique" ||
+                      item.path === "/notifications" ||
+                      item.path === "/premium" ||
+                      item.path === "/profil" ||
+                      item.path === "/parametres" ||
+                      item.path === "/diagnostic"
+                    }
                     className={({ isActive }) =>
                       `
                       group
@@ -174,64 +207,50 @@ export default function Sidebar({
                       <>
                         <Icon
                           size={18}
-                          strokeWidth={
-                            isActive ? 2.2 : 1.9
-                          }
+                          strokeWidth={isActive ? 2.2 : 1.9}
                         />
 
                         <span>{item.label}</span>
+
+                        {!admin &&
+                          item.path ===
+                            "/notifications" && (
+                            <span className="ml-auto h-2 w-2 rounded-full bg-zinc-300 group-[.active]:bg-white" />
+                          )}
                       </>
                     )}
                   </NavLink>
                 );
-
               })}
-
             </nav>
-
           </div>
-
 
           {/* Bloc inférieur */}
 
-          <div className="
-            mt-auto
-            border-t
-            border-zinc-100
-            p-4
-          ">
-
-            <div className="
-              rounded-xl
-              bg-zinc-50
-              px-3
-              py-3
-            ">
-
+          <div className="mt-auto border-t border-zinc-100 p-4">
+            <div className="rounded-xl bg-zinc-50 px-3 py-3">
               <p className="text-xs font-medium text-zinc-900">
                 {admin
                   ? "Espace administrateur"
                   : "Espace utilisateur"}
               </p>
 
-              <p className="
-                mt-1
-                text-[11px]
-                leading-4
-                text-zinc-500
-              ">
+              <p
+                className="
+                  mt-1
+                  text-[11px]
+                  leading-4
+                  text-zinc-500
+                "
+              >
                 {admin
                   ? "Gestion et supervision de CodeDoctor"
                   : "Accédez à vos fonctionnalités CodeDoctor"}
               </p>
-
             </div>
-
           </div>
-
         </div>
       </aside>
     </>
   );
 }
-
