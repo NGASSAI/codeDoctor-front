@@ -1,7 +1,10 @@
+
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
+import InstallPWA from "../components/pwa/InstallPWA";
 
 export default function UserLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -22,6 +25,8 @@ export default function UserLayout() {
           <Outlet />
         </main>
       </div>
+
+      <InstallPWA />
     </div>
   );
 }
