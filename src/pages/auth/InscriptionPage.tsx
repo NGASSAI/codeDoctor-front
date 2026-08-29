@@ -20,7 +20,6 @@ interface InscriptionResponse {
     displayName: string | null;
     emailVerified: boolean;
   };
-
   tokenVerification: string;
   message: string;
 }
@@ -39,15 +38,35 @@ export default function InscriptionPage() {
   const [confirmerMotDePasse, setConfirmerMotDePasse] =
     useState("");
 
+  const [recoveryAnswer, setRecoveryAnswer] =
+    useState("");
+
+  const [recoveryHint, setRecoveryHint] =
+    useState("");
+
   const [afficherMotDePasse, setAfficherMotDePasse] =
     useState(false);
 
   const [afficherConfirmation, setAfficherConfirmation] =
     useState(false);
 
-  const [chargement, setChargement] = useState(false);
-  const [erreur, setErreur] = useState("");
-  const [succes, setSucces] = useState(false);
+  const [afficherPhrase, setAfficherPhrase] =
+    useState(false);
+
+  const [afficherConfirmationPhrase, setAfficherConfirmationPhrase] =
+    useState(false);
+
+  const [confirmationPhrase, setConfirmationPhrase] =
+    useState("");
+
+  const [chargement, setChargement] =
+    useState(false);
+
+  const [erreur, setErreur] =
+    useState("");
+
+  const [succes, setSucces] =
+    useState(false);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -57,14 +76,29 @@ export default function InscriptionPage() {
     setErreur("");
     setSucces(false);
 
-    const nomNormalise = nom.trim();
-    const emailNormalise = email.trim().toLowerCase();
+    const nomNormalise =
+      nom.trim();
+
+    const emailNormalise =
+      email.trim().toLowerCase();
+
+    const phraseNormalisee =
+      recoveryAnswer.trim();
+
+    const confirmationPhraseNormalisee =
+      confirmationPhrase.trim();
+
+    const indiceNormalise =
+      recoveryHint.trim();
 
     if (
       !nomNormalise ||
       !emailNormalise ||
       !motDePasse ||
-      !confirmerMotDePasse
+      !confirmerMotDePasse ||
+      !phraseNormalisee ||
+      !confirmationPhraseNormalisee ||
+      !indiceNormalise
     ) {
       setErreur(
         "Veuillez remplir tous les champs."
@@ -86,9 +120,46 @@ export default function InscriptionPage() {
       return;
     }
 
-    if (motDePasse !== confirmerMotDePasse) {
+    if (
+      motDePasse !==
+      confirmerMotDePasse
+    ) {
       setErreur(
         "Les mots de passe ne correspondent pas."
+      );
+      return;
+    }
+
+    if (phraseNormalisee.length < 8) {
+      setErreur(
+        "La phrase secrète doit contenir au moins 8 caractères."
+      );
+      return;
+    }
+
+    if (
+      phraseNormalisee.toLowerCase() ===
+      motDePasse.toLowerCase()
+    ) {
+      setErreur(
+        "La phrase secrète doit être différente du mot de passe."
+      );
+      return;
+    }
+
+    if (
+      phraseNormalisee !==
+      confirmationPhraseNormalisee
+    ) {
+      setErreur(
+        "Les phrases secrètes ne correspondent pas."
+      );
+      return;
+    }
+
+    if (indiceNormalise.length < 3) {
+      setErreur(
+        "L'indice doit contenir au moins 3 caractères."
       );
       return;
     }
@@ -103,6 +174,10 @@ export default function InscriptionPage() {
             displayName: nomNormalise,
             email: emailNormalise,
             motDePasse,
+            recoveryAnswer:
+              phraseNormalisee,
+            recoveryHint:
+              indiceNormalise,
           }
         );
 
@@ -123,35 +198,30 @@ export default function InscriptionPage() {
 
       setSucces(true);
 
-      /*
-       * Le backend retourne actuellement le token
-       * directement pour permettre les tests.
-       *
-       * Lorsque l'envoi d'email sera activé,
-       * cette redirection sera remplacée par une
-       * page indiquant que le lien a été envoyé.
-       */
-     navigate(
-  `/verification-email?token=${encodeURIComponent(
-    response.data.tokenVerification
-  )}`,
-  {
-    replace: true,
-  }
-);
+      navigate(
+        `/verification-email?token=${encodeURIComponent(
+          tokenVerification
+        )}`,
+        {
+          replace: true,
+        }
+      );
     } catch (error: unknown) {
       console.error(
         "Erreur d'inscription :",
         error
       );
 
-      if (axios.isAxiosError<ErreurApi>(error)) {
-        const message =
+      if (
+        axios.isAxiosError<ErreurApi>(
+          error
+        )
+      ) {
+        setErreur(
           error.response?.data?.erreur ??
-          error.response?.data?.message ??
-          "Impossible de créer le compte. Veuillez réessayer.";
-
-        setErreur(message);
+            error.response?.data?.message ??
+            "Impossible de créer le compte. Veuillez réessayer."
+        );
       } else {
         setErreur(
           "Une erreur inattendue est survenue."
@@ -165,9 +235,7 @@ export default function InscriptionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
-        {/* =========================
-            PRÉSENTATION
-        ========================== */}
+        {/* Présentation */}
 
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900 lg:flex">
           <div className="absolute inset-0">
@@ -263,9 +331,7 @@ export default function InscriptionPage() {
           </div>
         </section>
 
-        {/* =========================
-            FORMULAIRE
-        ========================== */}
+        {/* Formulaire */}
 
         <section className="flex items-center justify-center px-5 py-12 sm:px-8">
           <motion.div
@@ -282,8 +348,6 @@ export default function InscriptionPage() {
             }}
             className="w-full max-w-md"
           >
-            {/* Logo mobile */}
-
             <div className="mb-10 lg:hidden">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
@@ -295,8 +359,6 @@ export default function InscriptionPage() {
                 </span>
               </div>
             </div>
-
-            {/* En-tête */}
 
             <div>
               <p className="text-sm font-medium text-blue-600">
@@ -312,14 +374,10 @@ export default function InscriptionPage() {
               </p>
             </div>
 
-            {/* Formulaire */}
-
             <form
               onSubmit={handleSubmit}
               className="mt-8 space-y-5"
             >
-              {/* Erreur */}
-
               {erreur && (
                 <motion.div
                   initial={{
@@ -337,8 +395,6 @@ export default function InscriptionPage() {
                 </motion.div>
               )}
 
-              {/* Succès */}
-
               {succes && (
                 <motion.div
                   initial={{
@@ -352,12 +408,9 @@ export default function InscriptionPage() {
                   role="status"
                   className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm leading-5 text-green-700"
                 >
-                  Compte créé avec succès. Vérification de
-                  votre adresse email...
+                  Compte créé avec succès. Vérification en cours...
                 </motion.div>
               )}
-
-              {/* Nom */}
 
               <div>
                 <label
@@ -381,8 +434,6 @@ export default function InscriptionPage() {
                 />
               </div>
 
-              {/* Email */}
-
               <div>
                 <label
                   htmlFor="email"
@@ -404,8 +455,6 @@ export default function InscriptionPage() {
                   className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
                 />
               </div>
-
-              {/* Mot de passe */}
 
               <div>
                 <label
@@ -443,12 +492,12 @@ export default function InscriptionPage() {
                       )
                     }
                     disabled={chargement}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
                       afficherMotDePasse
                         ? "Masquer le mot de passe"
                         : "Afficher le mot de passe"
                     }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {afficherMotDePasse ? (
                       <EyeOff size={18} />
@@ -458,8 +507,6 @@ export default function InscriptionPage() {
                   </button>
                 </div>
               </div>
-
-              {/* Confirmation */}
 
               <div>
                 <label
@@ -497,12 +544,12 @@ export default function InscriptionPage() {
                       )
                     }
                     disabled={chargement}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
                       afficherConfirmation
                         ? "Masquer le mot de passe"
                         : "Afficher le mot de passe"
                     }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {afficherConfirmation ? (
                       <EyeOff size={18} />
@@ -513,7 +560,162 @@ export default function InscriptionPage() {
                 </div>
               </div>
 
-              {/* Bouton */}
+              {/* Phrase secrète */}
+
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4 sm:p-5">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900">
+                    Phrase secrète de récupération
+                  </h3>
+
+                  <p className="mt-2 text-xs leading-5 text-zinc-600">
+                    Cette phrase permettra de vérifier votre
+                    identité si vous oubliez votre mot de passe.
+                    Choisissez une phrase personnelle, difficile
+                    à deviner, et mémorisez-la.
+                  </p>
+
+                  <p className="mt-2 text-xs font-medium text-blue-700">
+                    Ne choisissez pas une information publique
+                    comme votre ville, votre sport préféré ou le
+                    nom d’un proche.
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="recoveryAnswer"
+                    className="mb-2 block text-sm font-medium text-zinc-800"
+                  >
+                    Votre phrase secrète
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      id="recoveryAnswer"
+                      type={
+                        afficherPhrase
+                          ? "text"
+                          : "password"
+                      }
+                      autoComplete="off"
+                      value={recoveryAnswer}
+                      onChange={(event) =>
+                        setRecoveryAnswer(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Ex. Mon premier ordinateur était bleu"
+                      disabled={chargement}
+                      className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAfficherPhrase(
+                          (value) => !value
+                        )
+                      }
+                      disabled={chargement}
+                      aria-label={
+                        afficherPhrase
+                          ? "Masquer la phrase secrète"
+                          : "Afficher la phrase secrète"
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {afficherPhrase ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="confirmationPhrase"
+                    className="mb-2 block text-sm font-medium text-zinc-800"
+                  >
+                    Confirmer la phrase secrète
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      id="confirmationPhrase"
+                      type={
+                        afficherConfirmationPhrase
+                          ? "text"
+                          : "password"
+                      }
+                      autoComplete="off"
+                      value={confirmationPhrase}
+                      onChange={(event) =>
+                        setConfirmationPhrase(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Répétez votre phrase secrète"
+                      disabled={chargement}
+                      className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAfficherConfirmationPhrase(
+                          (value) => !value
+                        )
+                      }
+                      disabled={chargement}
+                      aria-label={
+                        afficherConfirmationPhrase
+                          ? "Masquer la phrase secrète"
+                          : "Afficher la phrase secrète"
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {afficherConfirmationPhrase ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="recoveryHint"
+                    className="mb-2 block text-sm font-medium text-zinc-800"
+                  >
+                    Indice de récupération
+                  </label>
+
+                  <input
+                    id="recoveryHint"
+                    type="text"
+                    autoComplete="off"
+                    value={recoveryHint}
+                    onChange={(event) =>
+                      setRecoveryHint(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Ex. Mon premier ordinateur"
+                    disabled={chargement}
+                    className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                  />
+
+                  <p className="mt-2 text-xs leading-5 text-zinc-500">
+                    L’indice sera visible dans votre espace
+                    personnel. Il ne doit pas révéler directement
+                    votre phrase secrète.
+                  </p>
+                </div>
+              </div>
 
               <motion.button
                 type="submit"
@@ -533,7 +735,6 @@ export default function InscriptionPage() {
                 ) : (
                   <>
                     Créer mon compte
-
                     <ArrowRight
                       size={17}
                       className="transition-transform group-hover:translate-x-0.5"
@@ -543,14 +744,10 @@ export default function InscriptionPage() {
               </motion.button>
             </form>
 
-            {/* Informations */}
-
             <p className="mt-8 text-center text-xs leading-5 text-zinc-400">
               En créant un compte, vous acceptez les
               conditions d'utilisation de CodeDoctor.
             </p>
-
-            {/* Connexion */}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-zinc-600">
