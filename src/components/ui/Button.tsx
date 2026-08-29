@@ -21,13 +21,13 @@ export default function Button({
 }: ButtonProps) {
   const variants: Record<ButtonVariant, string> = {
     primary:
-      "bg-zinc-900 text-white hover:bg-zinc-800",
+      "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:shadow-lg hover:shadow-blue-500/30",
     secondary:
-      "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50",
+      "border border-blue-200 bg-white/80 backdrop-blur-sm text-zinc-950 hover:bg-blue-50",
     danger:
       "bg-red-600 text-white hover:bg-red-700",
     ghost:
-      "bg-transparent text-zinc-600 hover:bg-zinc-100",
+      "bg-transparent text-blue-600 hover:bg-blue-50",
   };
 
   return (

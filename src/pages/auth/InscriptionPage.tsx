@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -13,17 +12,14 @@ import {
 import axios from "axios";
 
 import { api } from "../../lib/api";
-import { useAuthStore } from "../../stores/auth.store";
 
-interface ConnexionResponse {
+interface InscriptionResponse {
   utilisateur: {
     id: string;
     email: string;
     displayName: string | null;
-    role?: "USER" | "ADMIN";
   };
-  jeton: string;
-  refreshToken: string;
+  message: string;
 }
 
 interface ErreurApi {
@@ -31,105 +27,78 @@ interface ErreurApi {
   message?: string;
 }
 
-export default function ConnexionPage() {
+export default function InscriptionPage() {
   const navigate = useNavigate();
 
-  const definirSession = useAuthStore(
-    (state) => state.definirSession
-  );
-
+  const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [afficherMotDePasse, setAfficherMotDePasse] =
-    useState(false);
+  const [confirmerMotDePasse, setConfirmerMotDePasse] = useState("");
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
+  const [afficherConfirmation, setAfficherConfirmation] = useState(false);
 
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState("");
+  const [succes, setSucces] = useState(false);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setErreur("");
+    setSucces(false);
 
+    const nomNormalise = nom.trim();
     const emailNormalise = email.trim();
 
-    if (!emailNormalise || !motDePasse) {
-      setErreur(
-        "Veuillez renseigner votre email et votre mot de passe."
-      );
+    if (!nomNormalise || !emailNormalise || !motDePasse || !confirmerMotDePasse) {
+      setErreur("Veuillez remplir tous les champs.");
+      return;
+    }
+
+    if (motDePasse !== confirmerMotDePasse) {
+      setErreur("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    if (motDePasse.length < 6) {
+      setErreur("Le mot de passe doit contenir au moins 6 caractères.");
       return;
     }
 
     try {
       setChargement(true);
 
-      const response = await api.post<ConnexionResponse>(
-        "/auth/connexion",
+      const response = await api.post<InscriptionResponse>(
+        "/auth/inscription",
         {
+          displayName: nomNormalise,
           email: emailNormalise,
           motDePasse,
         }
       );
 
-      const {
-        utilisateur,
-        jeton,
-        refreshToken,
-      } = response.data;
-
-      if (
-        !utilisateur ||
-        !jeton ||
-        !refreshToken
-      ) {
-        setErreur(
-          "La réponse du serveur est invalide."
-        );
-        return;
-      }
-
-      definirSession(
-        utilisateur,
-        jeton,
-        refreshToken
-      );
-
-      if (utilisateur.role === "ADMIN") {
-        navigate("/admin/dashboard", {
-          replace: true,
-        });
-      } else {
-        navigate("/dashboard", {
-          replace: true,
-        });
+      if (response.data.message) {
+        setSucces(true);
+        setTimeout(() => {
+          navigate("/connexion");
+        }, 2000);
       }
     } catch (error: unknown) {
-      console.error(
-        "Erreur de connexion :",
-        error
-      );
+      console.error("Erreur d'inscription :", error);
 
       if (axios.isAxiosError<ErreurApi>(error)) {
         const message =
           error.response?.data?.erreur ??
           error.response?.data?.message ??
-          "Impossible de se connecter. Vérifiez vos identifiants.";
+          "Impossible de créer le compte. Veuillez réessayer.";
 
         setErreur(message);
       } else {
-        setErreur(
-          "Impossible de se connecter. Une erreur inattendue est survenue."
-        );
+        setErreur("Une erreur inattendue est survenue.");
       }
     } finally {
       setChargement(false);
     }
-  }
-
-  function allerMotDePasseOublie() {
-    navigate("/mot-de-passe-oublie");
   }
 
   return (
@@ -194,21 +163,21 @@ export default function ConnexionPage() {
               className="max-w-xl"
             >
               <p className="mb-5 text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
-                Communauté développeurs
+                Rejoignez-nous
               </p>
 
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white xl:text-5xl">
-                Résolvez.
+                Créez votre
                 <br />
-                Apprenez.
+                compte.
                 <br />
-                Partagez.
+                Commencez.
               </h1>
 
               <p className="mt-6 max-w-lg text-base leading-7 text-blue-200">
-                Retrouvez vos expériences techniques,
-                échangez avec la communauté et construisez
-                votre expertise avec CodeDoctor.
+                Rejoignez la communauté de développeurs,
+                améliorez vos compétences et résolvez
+                des bugs techniques avec CodeDoctor.
               </p>
             </motion.div>
 
@@ -251,15 +220,15 @@ export default function ConnexionPage() {
 
             <div>
               <p className="text-sm font-medium text-blue-600">
-                Bienvenue
+                Nouveau ici ?
               </p>
 
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
-                Se connecter
+                Créer un compte
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-zinc-600">
-                Accédez à votre espace CodeDoctor.
+                Rejoignez CodeDoctor en quelques secondes.
               </p>
             </div>
 
@@ -273,13 +242,50 @@ export default function ConnexionPage() {
               {/* Erreur */}
 
               {erreur && (
-                <div
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   role="alert"
                   className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700"
                 >
                   {erreur}
-                </div>
+                </motion.div>
               )}
+
+              {/* Succès */}
+
+              {succes && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  role="alert"
+                  className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm leading-5 text-green-700"
+                >
+                  Compte créé avec succès ! Redirection...
+                </motion.div>
+              )}
+
+              {/* Nom */}
+
+              <div>
+                <label
+                  htmlFor="nom"
+                  className="mb-2 block text-sm font-medium text-zinc-800"
+                >
+                  Nom complet
+                </label>
+
+                <input
+                  id="nom"
+                  type="text"
+                  autoComplete="name"
+                  value={nom}
+                  onChange={(event) => setNom(event.target.value)}
+                  placeholder="Votre nom"
+                  disabled={chargement}
+                  className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                />
+              </div>
 
               {/* Email */}
 
@@ -296,83 +302,86 @@ export default function ConnexionPage() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="vous@exemple.com"
                   disabled={chargement}
-                  className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-4 focus:ring-zinc-950/5 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                  className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
                 />
               </div>
 
               {/* Mot de passe */}
 
               <div>
-                <div className="mb-2 flex items-center justify-between">
-
-                  <label
-                    htmlFor="motDePasse"
-                    className="block text-sm font-medium text-zinc-800"
-                  >
-                    Mot de passe
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={allerMotDePasseOublie}
-                    disabled={chargement}
-                    className="text-xs font-medium text-zinc-500 transition hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Mot de passe oublié ?
-                  </button>
-
-                </div>
+                <label
+                  htmlFor="motDePasse"
+                  className="mb-2 block text-sm font-medium text-zinc-800"
+                >
+                  Mot de passe
+                </label>
 
                 <div className="relative">
 
                   <input
                     id="motDePasse"
-                    type={
-                      afficherMotDePasse
-                        ? "text"
-                        : "password"
-                    }
-                    autoComplete="current-password"
+                    type={afficherMotDePasse ? "text" : "password"}
+                    autoComplete="new-password"
                     value={motDePasse}
-                    onChange={(event) =>
-                      setMotDePasse(event.target.value)
-                    }
+                    onChange={(event) => setMotDePasse(event.target.value)}
                     placeholder="Votre mot de passe"
                     disabled={chargement}
-                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-4 focus:ring-zinc-950/5 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                    className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
                   />
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setAfficherMotDePasse(
-                        (value) => !value
-                      )
-                    }
+                    onClick={() => setAfficherMotDePasse((value) => !value)}
                     disabled={chargement}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    aria-label={
-                      afficherMotDePasse
-                        ? "Masquer le mot de passe"
-                        : "Afficher le mot de passe"
-                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label={afficherMotDePasse ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   >
-                    {afficherMotDePasse ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
+                    {afficherMotDePasse ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
 
                 </div>
               </div>
 
-              {/* Bouton connexion */}
+              {/* Confirmation mot de passe */}
+
+              <div>
+                <label
+                  htmlFor="confirmerMotDePasse"
+                  className="mb-2 block text-sm font-medium text-zinc-800"
+                >
+                  Confirmer le mot de passe
+                </label>
+
+                <div className="relative">
+
+                  <input
+                    id="confirmerMotDePasse"
+                    type={afficherConfirmation ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={confirmerMotDePasse}
+                    onChange={(event) => setConfirmerMotDePasse(event.target.value)}
+                    placeholder="Confirmez votre mot de passe"
+                    disabled={chargement}
+                    className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setAfficherConfirmation((value) => !value)}
+                    disabled={chargement}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label={afficherConfirmation ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {afficherConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+
+                </div>
+              </div>
+
+              {/* Bouton inscription */}
 
               <motion.button
                 type="submit"
@@ -383,21 +392,13 @@ export default function ConnexionPage() {
               >
                 {chargement ? (
                   <>
-                    <Loader2
-                      size={18}
-                      className="animate-spin"
-                    />
-
-                    Connexion...
+                    <Loader2 size={18} className="animate-spin" />
+                    Création...
                   </>
                 ) : (
                   <>
-                    Se connecter
-
-                    <ArrowRight
-                      size={17}
-                      className="transition-transform group-hover:translate-x-0.5"
-                    />
+                    Créer mon compte
+                    <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
                   </>
                 )}
               </motion.button>
@@ -407,20 +408,20 @@ export default function ConnexionPage() {
             {/* Informations */}
 
             <p className="mt-8 text-center text-xs leading-5 text-zinc-400">
-              En vous connectant, vous accédez à votre espace
-              personnel CodeDoctor.
+              En créant un compte, vous acceptez les conditions
+              d'utilisation de CodeDoctor.
             </p>
 
-            {/* Lien création compte */}
+            {/* Lien connexion */}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-zinc-600">
-                Pas encore de compte ?{" "}
+                Déjà un compte ?{" "}
                 <Link
-                  to="/inscription"
+                  to="/connexion"
                   className="font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
                 >
-                  Créer un compte
+                  Se connecter
                 </Link>
               </p>
             </div>
@@ -432,4 +433,3 @@ export default function ConnexionPage() {
     </div>
   );
 }
-

@@ -2,10 +2,8 @@
 import { io, type Socket } from "socket.io-client";
 
 const SOCKET_URL =
-  import.meta.env.VITE_API_URL?.replace(
-    /\/api\/?$/,
-    ""
-  ) || "http://localhost:4000";
+  import.meta.env.VITE_API_URL ||
+  "https://codedoctor-backend.onrender.com";
 
 let socket: Socket | null = null;
 
@@ -18,18 +16,18 @@ export function obtenirSocket(): Socket | null {
 
   if (socket) {
     const authentification =
-  typeof socket.auth === "object"
-    ? socket.auth
-    : {};
+      typeof socket.auth === "object"
+        ? socket.auth
+        : {};
 
-if (authentification.token !== token) {
-  socket.auth = {
-    ...authentification,
-    token,
-  };
-}
+    if (authentification.token !== token) {
+      socket.auth = {
+        ...authentification,
+        token,
+      };
+    }
 
-    if (!socket.connected) {    
+    if (!socket.connected) {
       socket.connect();
     }
 
@@ -80,15 +78,86 @@ export function ecouterNotification(
     return () => {};
   }
 
+  const gererNotification = (
+    notification: unknown
+  ) => {
+    jouerSonNotification();
+    callback(notification);
+  };
+
   currentSocket.on(
     "notification",
-    callback
+    gererNotification
   );
 
   return () => {
     currentSocket.off(
       "notification",
-      callback
+      gererNotification
     );
   };
+}
+
+function jouerSonNotification() {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const audioContext =
+      new AudioContextClass();
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gainNode =
+      audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(
+      audioContext.destination
+    );
+
+    oscillator.frequency.value = 880;
+    oscillator.type = "sine";
+
+    gainNode.gain.setValueAtTime(
+      0.3,
+      audioContext.currentTime
+    );
+
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.3
+    );
+
+    oscillator.start(
+      audioContext.currentTime
+    );
+
+    oscillator.stop(
+      audioContext.currentTime + 0.3
+    );
+
+    oscillator.addEventListener(
+      "ended",
+      () => {
+        void audioContext.close();
+      },
+      { once: true }
+    );
+  } catch (error) {
+    console.error(
+      "Erreur lors de la lecture du son de notification :",
+      error
+    );
+  }
 }

@@ -21,6 +21,7 @@ import NotificationsPage from "../pages/user/NotificationsPage";
 import AccueilPage from "../pages/public/AccueilPage";
 import ExperiencesPage from "../pages/public/ExperiencesPage";
 import ConnexionPage from "../pages/auth/ConnexionPage";
+import InscriptionPage from "../pages/auth/InscriptionPage";
 import ProfilPage from "../pages/user/ProfilPage";
 import ParametresPage from "../pages/user/ParametresPage";
 import DashboardPage from "../pages/user/DashboardPage";
@@ -31,6 +32,7 @@ import ExperiencesAdminPage from "../pages/admin/ExperiencesAdminPage";
 import ExperienceDetailPage from "../pages/public/ExperienceDetailPage";
 import HistoriqueDetailPage from "../pages/user/HistoriqueDetailPage";
 import ConversationPage from "../pages/user/ConversationPage";
+import MotDePasseOubliePage from "../pages/auth/MotDePasseOubliePage";
 
 export default function AppRouter() {
   return (
@@ -67,6 +69,14 @@ export default function AppRouter() {
             path="/connexion"
             element={<ConnexionPage />}
           />
+          <Route
+            path="/inscription"
+            element={<InscriptionPage />}
+          />
+          <Route
+  path="/mot-de-passe-oublie"
+  element={<MotDePasseOubliePage />}
+/>
         </Route>
 
 

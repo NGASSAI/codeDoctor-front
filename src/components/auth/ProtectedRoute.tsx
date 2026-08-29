@@ -22,9 +22,9 @@ export default function ProtectedRoute({
    */
   if (!initialise) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-        <div className="flex items-center gap-3 text-sm text-zinc-500">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-950" />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+        <div className="flex items-center gap-3 text-sm text-zinc-600">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600" />
           Chargement...
         </div>
       </div>

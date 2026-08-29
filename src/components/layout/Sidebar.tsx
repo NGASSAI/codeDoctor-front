@@ -12,6 +12,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { NavLink } from "react-router-dom";
 
@@ -105,18 +106,24 @@ export default function Sidebar({
   return (
     <>
       {open && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
-      <aside
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{ x: open ? 0 : -300 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`
           fixed inset-y-0 left-0 z-50
-          w-64 border-r border-zinc-200/80
-          bg-white
+          w-64 border-r border-blue-200/80
+          bg-white/95 backdrop-blur-xl
           transition-transform duration-300
           lg:static lg:z-auto lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
@@ -130,7 +137,9 @@ export default function Sidebar({
               Menu
             </span>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onClose}
               className="
@@ -138,13 +147,13 @@ export default function Sidebar({
                 p-2
                 text-zinc-500
                 transition
-                hover:bg-zinc-100
-                hover:text-zinc-900
+                hover:bg-blue-50
+                hover:text-blue-600
               "
               aria-label="Fermer le menu"
             >
               <X size={19} />
-            </button>
+            </motion.button>
           </div>
 
           {/* Navigation */}
@@ -197,8 +206,8 @@ export default function Sidebar({
                       transition-all
                       ${
                         isActive
-                          ? "bg-green-700 text-white shadow-sm"
-                          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/30"
+                          : "text-zinc-600 hover:bg-blue-50 hover:text-blue-700"
                       }
                       `
                     }
@@ -250,7 +259,7 @@ export default function Sidebar({
             </div>
           </div>
         </div>
-      </aside>
+      </motion.aside>
     </>
   );
 }

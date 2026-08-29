@@ -19,7 +19,7 @@ export default function Input({
       {label && (
         <label
           htmlFor={id}
-          className="block text-sm font-medium text-zinc-700"
+          className="block text-sm font-medium text-zinc-800"
         >
           {label}
         </label>
@@ -35,19 +35,19 @@ export default function Input({
           w-full rounded-xl
           border
           bg-white px-4 py-3
-          text-sm text-zinc-900
+          text-sm text-zinc-950
           outline-none
           transition
           placeholder:text-zinc-400
-          focus:border-zinc-400
-          focus:ring-4 focus:ring-zinc-100
+          focus:border-blue-500
+          focus:ring-4 focus:ring-blue-500/10
           disabled:cursor-not-allowed
           disabled:bg-zinc-50
           disabled:opacity-60
           ${
             error
               ? "border-red-400 focus:border-red-400 focus:ring-red-50"
-              : "border-zinc-200"
+              : "border-blue-200"
           }
           ${className}
         `}

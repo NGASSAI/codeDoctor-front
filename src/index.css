@@ -11,11 +11,26 @@
     sans-serif;
 
   color: #18181b;
-  background: #fafafa;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdfa 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animation de fond subtile */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+body {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
 }
 
 * {

@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -119,10 +120,16 @@ export default function InstallPWA() {
   }
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-60 sm:left-auto sm:right-6 sm:w-420px">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xl shadow-zinc-900/10">
+    <motion.div
+      initial={{ opacity: 0, y: 100 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 100 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed inset-x-4 bottom-4 z-60 sm:left-auto sm:right-6 sm:w-420px"
+    >
+      <div className="rounded-2xl border border-blue-200 bg-white/95 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/20">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30">
             <Download size={18} />
           </div>
 
@@ -133,7 +140,7 @@ export default function InstallPWA() {
                   Installer CodeDoctor
                 </h2>
 
-                <p className="mt-1 text-xs leading-5 text-zinc-500">
+                <p className="mt-1 text-xs leading-5 text-zinc-600">
                   Installez CodeDoctor sur votre appareil
                   pour y accéder plus rapidement depuis
                   votre écran d'accueil.
@@ -147,8 +154,8 @@ export default function InstallPWA() {
                   shrink-0 rounded-lg p-1.5
                   text-zinc-400
                   transition
-                  hover:bg-zinc-100
-                  hover:text-zinc-900
+                  hover:bg-blue-50
+                  hover:text-blue-600
                 "
                 aria-label="Fermer"
               >
@@ -164,12 +171,12 @@ export default function InstallPWA() {
                   inline-flex flex-1
                   items-center justify-center
                   gap-2 rounded-xl
-                  bg-zinc-950
+                  bg-gradient-to-r from-blue-600 to-cyan-600
                   px-4 py-2.5
                   text-sm font-semibold
                   text-white
                   transition
-                  hover:bg-zinc-800
+                  hover:shadow-lg hover:shadow-blue-500/30
                 "
               >
                 <Download size={16} />
@@ -181,12 +188,12 @@ export default function InstallPWA() {
                 onClick={fermer}
                 className="
                   rounded-xl
-                  border border-zinc-200
+                  border border-blue-200
                   px-4 py-2.5
                   text-sm font-medium
-                  text-zinc-600
+                  text-blue-700
                   transition
-                  hover:bg-zinc-50
+                  hover:bg-blue-50
                 "
               >
                 Plus tard
@@ -195,6 +202,6 @@ export default function InstallPWA() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
