@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import InstallPWA from "../components/pwa/InstallPWA";
@@ -8,13 +9,13 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-50 to-zinc-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       <Navbar
-  onMenuClick={() => setSidebarOpen(true)}
-  admin
-/>
+        onMenuClick={() => setSidebarOpen(true)}
+        admin
+      />
 
-      <div className="flex">
+      <div className="flex min-h-[calc(100vh-68px)]">
         <Sidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -25,6 +26,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
       <InstallPWA />
     </div>
   );

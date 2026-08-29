@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
@@ -15,7 +14,7 @@ export default function UserLayout() {
         onMenuClick={() => setSidebarOpen(true)}
       />
 
-      <div className="flex">
+      <div className="flex min-h-[calc(100vh-68px)]">
         <Sidebar
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}

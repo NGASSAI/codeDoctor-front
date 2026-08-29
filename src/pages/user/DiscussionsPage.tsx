@@ -1,3 +1,4 @@
+
 import {
   useEffect,
   useState,
@@ -47,16 +48,22 @@ function libelleCategorie(categorie: string) {
   switch (categorie) {
     case "JAVASCRIPT":
       return "JavaScript";
+
     case "TYPESCRIPT":
       return "TypeScript";
+
     case "REACT":
       return "React";
+
     case "HTTP":
       return "HTTP";
+
     case "API":
       return "API";
+
     case "HTML_CSS":
       return "HTML / CSS";
+
     default:
       return categorie;
   }
@@ -88,14 +95,25 @@ function DiscussionCard({
   onSupprimerCommentaire,
 }: DiscussionCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border border-blue-100 bg-white shadow-sm transition hover:border-blue-200 hover:shadow-md">
+      {/* =========================
+          CONTENU EXPÉRIENCE
+      ========================== */}
+
       <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white">
-            <MessageCircle size={18} />
+          {/* Icône */}
+
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/20">
+            <MessageCircle
+              size={18}
+              strokeWidth={2}
+            />
           </div>
 
           <div className="min-w-0 flex-1">
+            {/* Badges */}
+
             <div className="flex flex-wrap items-center gap-2">
               <Badge>
                 {libelleCategorie(
@@ -110,24 +128,34 @@ function DiscussionCard({
               )}
             </div>
 
-            <h2 className="mt-3 text-lg font-semibold text-zinc-950">
+            {/* Titre */}
+
+            <h2 className="mt-3 text-lg font-semibold text-slate-900">
               {experience.titre}
             </h2>
 
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
-              <span>
+            {/* Auteur + date */}
+
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="font-medium text-blue-700">
                 {experience.user.displayName ||
                   "Utilisateur CodeDoctor"}
               </span>
 
               <span>
-                {formaterDate(experience.createdAt)}
+                {formaterDate(
+                  experience.createdAt
+                )}
               </span>
             </div>
 
-            <p className="mt-4 line-clamp-3 text-sm leading-6 text-zinc-600">
+            {/* Problème */}
+
+            <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600">
               {experience.probleme}
             </p>
+
+            {/* Actions */}
 
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
@@ -135,12 +163,13 @@ function DiscussionCard({
                 className="
                   inline-flex items-center
                   gap-2 rounded-xl
-                  border border-zinc-200
+                  border border-blue-200
                   bg-white px-4 py-2.5
-                  text-sm font-medium
-                  text-zinc-700
+                  text-sm font-semibold
+                  text-blue-700
                   transition
-                  hover:bg-zinc-50
+                  hover:border-blue-300
+                  hover:bg-blue-50
                 "
               >
                 Voir le problème
@@ -153,19 +182,28 @@ function DiscussionCard({
                 className="
                   inline-flex items-center
                   gap-2 rounded-xl
-                  bg-zinc-950
+                  bg-gradient-to-r
+                  from-blue-600
+                  to-cyan-600
                   px-4 py-2.5
-                  text-sm font-medium
+                  text-sm font-semibold
                   text-white
+                  shadow-md
+                  shadow-blue-500/20
                   transition
-                  hover:bg-zinc-800
+                  hover:from-blue-700
+                  hover:to-cyan-700
+                  hover:shadow-lg
+                  hover:shadow-blue-500/25
                 "
               >
                 <MessageCircle size={15} />
+
                 {commentairesOuverts
                   ? "Masquer"
                   : "Discussion"}
-                <span className="text-zinc-400">
+
+                <span className="text-blue-100">
                   ({experience._count.comments})
                 </span>
               </button>
@@ -174,34 +212,53 @@ function DiscussionCard({
         </div>
       </div>
 
+      {/* =========================
+          ZONE DISCUSSION
+      ========================== */}
+
       {commentairesOuverts && (
-        <div className="border-t border-zinc-100 bg-zinc-50 p-5 sm:p-6">
-          <div className="flex items-center justify-between">
+        <div className="border-t border-blue-100 bg-blue-50/50 p-5 sm:p-6">
+          {/* En-tête */}
+
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900">
+              <h3 className="text-sm font-semibold text-slate-900">
                 Discussion
               </h3>
 
-              <p className="mt-1 text-xs text-zinc-400">
-                Échangez autour de cette expérience.
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Échangez autour de cette
+                expérience avec la communauté.
               </p>
             </div>
 
-            <span className="text-xs text-zinc-400">
+            <span className="shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
               {commentaires.length} commentaire
-              {commentaires.length > 1 ? "s" : ""}
+              {commentaires.length > 1
+                ? "s"
+                : ""}
             </span>
           </div>
 
+          {/* Commentaires */}
+
           <div className="mt-5 space-y-3">
             {commentaires.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-zinc-200 bg-white p-5 text-center">
-                <p className="text-sm text-zinc-500">
-                  Aucun commentaire pour le moment.
+              <div className="rounded-xl border border-dashed border-blue-200 bg-white p-5 text-center">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <MessageCircle
+                    size={18}
+                  />
+                </div>
+
+                <p className="mt-3 text-sm font-medium text-slate-700">
+                  Aucun commentaire pour le
+                  moment.
                 </p>
 
-                <p className="mt-1 text-xs text-zinc-400">
-                  Soyez le premier à participer.
+                <p className="mt-1 text-xs text-slate-500">
+                  Soyez le premier à participer
+                  à cette discussion.
                 </p>
               </div>
             ) : (
@@ -219,10 +276,12 @@ function DiscussionCard({
             )}
           </div>
 
-          <div className="mt-5 rounded-xl border border-zinc-200 bg-white p-4">
+          {/* Formulaire commentaire */}
+
+          <div className="mt-5 rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
             <label
               htmlFor={`commentaire-${experience.id}`}
-              className="text-sm font-medium text-zinc-800"
+              className="text-sm font-semibold text-slate-800"
             >
               Votre réponse
             </label>
@@ -242,21 +301,23 @@ function DiscussionCard({
               className="
                 mt-2 w-full resize-y
                 rounded-xl
-                border border-zinc-200
+                border border-blue-200
                 bg-white
                 p-3
-                text-sm text-zinc-900
+                text-sm text-slate-900
                 outline-none
                 transition
-                placeholder:text-zinc-400
-                focus:border-zinc-900
+                placeholder:text-slate-400
+                focus:border-blue-500
                 focus:ring-4
-                focus:ring-zinc-900/5
+                focus:ring-blue-500/10
+                disabled:cursor-not-allowed
+                disabled:bg-slate-50
               "
             />
 
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-slate-500">
                 {commentaire.length}/1000
               </span>
 
@@ -270,26 +331,39 @@ function DiscussionCard({
                 className="
                   inline-flex items-center
                   justify-center gap-2
-                  rounded-xl bg-zinc-950
+                  rounded-xl
+                  bg-gradient-to-r
+                  from-blue-600
+                  to-cyan-600
                   px-4 py-2.5
-                  text-sm font-medium
+                  text-sm font-semibold
                   text-white
+                  shadow-md
+                  shadow-blue-500/20
                   transition
-                  hover:bg-zinc-800
+                  hover:from-blue-700
+                  hover:to-cyan-700
                   disabled:cursor-not-allowed
                   disabled:opacity-50
+                  disabled:shadow-none
                 "
               >
                 {commentaireEnCours ? (
-                  <Loader2
-                    size={15}
-                    className="animate-spin"
-                  />
-                ) : (
-                  <Send size={15} />
-                )}
+                  <>
+                    <Loader2
+                      size={15}
+                      className="animate-spin"
+                    />
 
-                Publier
+                    Publication...
+                  </>
+                ) : (
+                  <>
+                    <Send size={15} />
+
+                    Publier
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -306,24 +380,31 @@ function CommentaireItem({
   commentaire: CommentaireExperience;
   onSupprimer: () => void;
 }) {
+  const initiale =
+    (
+      commentaire.user.displayName ||
+      "U"
+    )
+      .charAt(0)
+      .toUpperCase();
+
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4">
+    <div className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm transition hover:border-blue-200">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-700">
-            {(commentaire.user.displayName ||
-              "U")
-              .charAt(0)
-              .toUpperCase()}
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Avatar */}
+
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+            {initiale}
           </div>
 
-          <div>
-            <p className="text-xs font-semibold text-zinc-900">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold text-slate-900">
               {commentaire.user.displayName ||
                 "Utilisateur CodeDoctor"}
             </p>
 
-            <p className="mt-0.5 text-[11px] text-zinc-400">
+            <p className="mt-0.5 text-[11px] text-slate-500">
               {formaterDate(
                 commentaire.createdAt
               )}
@@ -331,23 +412,30 @@ function CommentaireItem({
           </div>
         </div>
 
+        {/* Suppression */}
+
         <button
           type="button"
           onClick={onSupprimer}
           className="
-            rounded-lg p-2
-            text-zinc-400
+            shrink-0
+            rounded-lg
+            p-2
+            text-slate-400
             transition
             hover:bg-red-50
             hover:text-red-600
           "
           aria-label="Supprimer le commentaire"
+          title="Supprimer le commentaire"
         >
           <Trash2 size={15} />
         </button>
       </div>
 
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-600">
+      {/* Contenu */}
+
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
         {commentaire.contenu}
       </p>
     </div>
@@ -355,9 +443,8 @@ function CommentaireItem({
 }
 
 export default function DiscussionsPage() {
-  const [experiences, setExperiences] = useState<
-    Experience[]
-  >([]);
+  const [experiences, setExperiences] =
+    useState<Experience[]>([]);
 
   const [commentaires, setCommentaires] =
     useState<
@@ -369,8 +456,10 @@ export default function DiscussionsPage() {
     setDiscussionsOuvertes,
   ] = useState<Record<string, boolean>>({});
 
-  const [commentairesSaisis, setCommentairesSaisis] =
-    useState<Record<string, string>>({});
+  const [
+    commentairesSaisis,
+    setCommentairesSaisis,
+  ] = useState<Record<string, string>>({});
 
   const [
     commentaireEnCours,
@@ -380,7 +469,12 @@ export default function DiscussionsPage() {
   const [chargement, setChargement] =
     useState(true);
 
-  const [erreur, setErreur] = useState("");
+  const [erreur, setErreur] =
+    useState("");
+
+  /* =========================
+     CHARGEMENT DES EXPÉRIENCES
+  ========================== */
 
   useEffect(() => {
     let actif = true;
@@ -397,7 +491,9 @@ export default function DiscussionsPage() {
           });
 
         if (actif) {
-          setExperiences(resultat.experiences);
+          setExperiences(
+            resultat.experiences
+          );
         }
       } catch (error) {
         console.error(
@@ -424,16 +520,22 @@ export default function DiscussionsPage() {
     };
   }, []);
 
+  /* =========================
+     OUVRIR / FERMER DISCUSSION
+  ========================== */
+
   async function ouvrirDiscussion(
     experienceId: string
   ) {
     const dejaOuverte =
       discussionsOuvertes[experienceId];
 
-    setDiscussionsOuvertes((anciennes) => ({
-      ...anciennes,
-      [experienceId]: !dejaOuverte,
-    }));
+    setDiscussionsOuvertes(
+      (anciennes) => ({
+        ...anciennes,
+        [experienceId]: !dejaOuverte,
+      })
+    );
 
     if (
       dejaOuverte ||
@@ -464,12 +566,17 @@ export default function DiscussionsPage() {
     }
   }
 
+  /* =========================
+     PUBLIER COMMENTAIRE
+  ========================== */
+
   async function publierCommentaire(
     experienceId: string
   ) {
     const contenu =
-      commentairesSaisis[experienceId]?.trim() ||
-      "";
+      commentairesSaisis[
+        experienceId
+      ]?.trim() || "";
 
     if (!contenu) {
       return;
@@ -479,6 +586,7 @@ export default function DiscussionsPage() {
       setCommentaireEnCours(
         experienceId
       );
+
       setErreur("");
 
       const commentaire =
@@ -495,10 +603,12 @@ export default function DiscussionsPage() {
         ],
       }));
 
-      setCommentairesSaisis((anciens) => ({
-        ...anciens,
-        [experienceId]: "",
-      }));
+      setCommentairesSaisis(
+        (anciens) => ({
+          ...anciens,
+          [experienceId]: "",
+        })
+      );
 
       setExperiences((anciennes) =>
         anciennes.map((experience) =>
@@ -508,7 +618,8 @@ export default function DiscussionsPage() {
                 _count: {
                   ...experience._count,
                   comments:
-                    experience._count.comments + 1,
+                    experience._count
+                      .comments + 1,
                 },
               }
             : experience
@@ -528,19 +639,26 @@ export default function DiscussionsPage() {
     }
   }
 
+  /* =========================
+     SUPPRIMER COMMENTAIRE
+  ========================== */
+
   async function supprimerMonCommentaire(
     experienceId: string,
     commentaireId: string
   ) {
-    const confirmer = window.confirm(
-      "Voulez-vous vraiment supprimer ce commentaire ?"
-    );
+    const confirmer =
+      window.confirm(
+        "Voulez-vous vraiment supprimer ce commentaire ?"
+      );
 
     if (!confirmer) {
       return;
     }
 
     try {
+      setErreur("");
+
       await supprimerCommentaire(
         commentaireId
       );
@@ -551,7 +669,8 @@ export default function DiscussionsPage() {
           anciens[experienceId] ?? []
         ).filter(
           (commentaire) =>
-            commentaire.id !== commentaireId
+            commentaire.id !==
+            commentaireId
         ),
       }));
 
@@ -564,7 +683,8 @@ export default function DiscussionsPage() {
                   ...experience._count,
                   comments: Math.max(
                     0,
-                    experience._count.comments - 1
+                    experience._count
+                      .comments - 1
                   ),
                 },
               }
@@ -583,24 +703,39 @@ export default function DiscussionsPage() {
     }
   }
 
+  /* =========================
+     RENDU
+  ========================== */
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8">
+      {/* =========================
+          EN-TÊTE
+      ========================== */}
+
       <section>
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600">
-          <MessageCircle size={14} />
-          Communauté
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+          <MessageCircle
+            size={14}
+          />
+
+          Communauté CodeDoctor
         </div>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           Discussions
         </h1>
 
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-          Échangez avec d'autres développeurs autour
-          de problèmes réels, de solutions et de bonnes
-          pratiques.
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+          Échangez avec d'autres développeurs
+          autour de problèmes réels, de
+          solutions et de bonnes pratiques.
         </p>
       </section>
+
+      {/* =========================
+          ERREUR
+      ========================== */}
 
       {erreur && (
         <Card className="border-red-200 bg-red-50 p-5">
@@ -610,91 +745,118 @@ export default function DiscussionsPage() {
               className="mt-0.5 shrink-0 text-red-600"
             />
 
-            <p className="text-sm text-red-700">
+            <p className="text-sm font-medium text-red-700">
               {erreur}
             </p>
           </div>
         </Card>
       )}
 
-      {chargement ? (
-        <Card className="p-12">
-          <div className="flex flex-col items-center text-center">
-            <Loader2
-              size={28}
-              className="animate-spin text-zinc-400"
-            />
+      {/* =========================
+          CHARGEMENT
+      ========================== */}
 
-            <p className="mt-4 text-sm font-medium text-zinc-700">
+      {chargement ? (
+        <Card className="border-blue-100 bg-white p-12">
+          <div className="flex flex-col items-center text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
+              <Loader2
+                size={25}
+                className="animate-spin text-blue-600"
+              />
+            </div>
+
+            <p className="mt-4 text-sm font-semibold text-slate-800">
               Chargement des discussions...
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Récupération des expériences de
+              la communauté.
             </p>
           </div>
         </Card>
       ) : experiences.length === 0 ? (
-        <Card className="p-12 text-center">
-          <BookOpen
-            size={36}
-            className="mx-auto text-zinc-300"
-          />
+        /* =========================
+           AUCUNE EXPÉRIENCE
+        ========================== */
 
-          <h2 className="mt-4 text-sm font-semibold text-zinc-800">
+        <Card className="border-blue-100 bg-white p-12 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <BookOpen size={28} />
+          </div>
+
+          <h2 className="mt-4 text-sm font-semibold text-slate-800">
             Aucune discussion pour le moment
           </h2>
 
-          <p className="mt-1 text-xs leading-5 text-zinc-400">
-            Les expériences publiées apparaîtront ici.
+          <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-slate-500">
+            Les expériences publiées par la
+            communauté apparaîtront ici.
           </p>
         </Card>
       ) : (
+        /* =========================
+           LISTE
+        ========================== */
+
         <div className="space-y-4">
-          {experiences.map((experience) => (
-            <DiscussionCard
-              key={experience.id}
-              experience={experience}
-              commentaires={
-                commentaires[experience.id] ?? []
-              }
-              commentairesOuverts={
-                Boolean(
+          {experiences.map(
+            (experience) => (
+              <DiscussionCard
+                key={experience.id}
+                experience={experience}
+                commentaires={
+                  commentaires[
+                    experience.id
+                  ] ?? []
+                }
+                commentairesOuverts={Boolean(
                   discussionsOuvertes[
                     experience.id
                   ]
-                )
-              }
-              commentaireEnCours={
-                commentaireEnCours === experience.id
-              }
-              commentaire={
-                commentairesSaisis[
+                )}
+                commentaireEnCours={
+                  commentaireEnCours ===
                   experience.id
-                ] ?? ""
-              }
-              onToggle={() =>
-                void ouvrirDiscussion(
-                  experience.id
-                )
-              }
-              onChangeCommentaire={(valeur) =>
-                setCommentairesSaisis(
-                  (anciens) => ({
-                    ...anciens,
-                    [experience.id]: valeur,
-                  })
-                )
-              }
-              onEnvoyerCommentaire={() =>
-                void publierCommentaire(
-                  experience.id
-                )
-              }
-              onSupprimerCommentaire={(id) =>
-                void supprimerMonCommentaire(
-                  experience.id,
+                }
+                commentaire={
+                  commentairesSaisis[
+                    experience.id
+                  ] ?? ""
+                }
+                onToggle={() =>
+                  void ouvrirDiscussion(
+                    experience.id
+                  )
+                }
+                onChangeCommentaire={(
+                  valeur
+                ) =>
+                  setCommentairesSaisis(
+                    (anciens) => ({
+                      ...anciens,
+                      [experience.id]:
+                        valeur,
+                    })
+                  )
+                }
+                onEnvoyerCommentaire={() =>
+                  void publierCommentaire(
+                    experience.id
+                  )
+                }
+                onSupprimerCommentaire={(
                   id
-                )
-              }
-            />
-          ))}
+                ) =>
+                  void supprimerMonCommentaire(
+                    experience.id,
+                    id
+                  )
+                }
+              />
+            )
+          )}
         </div>
       )}
     </div>

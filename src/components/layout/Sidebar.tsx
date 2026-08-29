@@ -1,3 +1,4 @@
+
 import {
   Bell,
   BookOpen,
@@ -5,6 +6,7 @@ import {
   CreditCard,
   History,
   Home,
+  LogOut,
   MessageCircle,
   Settings,
   ShieldCheck,
@@ -12,9 +14,10 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { NavLink, useNavigate } from "react-router-dom";
 
-import { NavLink } from "react-router-dom";
+import { useAuthStore } from "../../stores/auth.store";
 
 interface SidebarProps {
   open?: boolean;
@@ -23,10 +26,20 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
-  open = true,
+  open = false,
   onClose,
   admin = false,
 }: SidebarProps) {
+  const navigate = useNavigate();
+
+  const utilisateur = useAuthStore(
+    (state) => state.utilisateur
+  );
+
+  const deconnecter = useAuthStore(
+    (state) => state.deconnecter
+  );
+
   const items = admin
     ? [
         {
@@ -34,11 +47,6 @@ export default function Sidebar({
           icon: Home,
           path: "/admin",
         },
-        {
-  label: "Discussions",
-  icon: MessageCircle,
-  path: "/discussions",
-},
         {
           label: "Utilisateurs",
           icon: Users,
@@ -82,6 +90,11 @@ export default function Sidebar({
           path: "/historique",
         },
         {
+          label: "Discussions",
+          icon: MessageCircle,
+          path: "/discussions",
+        },
+        {
           label: "Notifications",
           icon: Bell,
           path: "/notifications",
@@ -103,163 +116,377 @@ export default function Sidebar({
         },
       ];
 
-  return (
-    <>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+  function gererDeconnexion() {
+    deconnecter();
+
+    onClose?.();
+
+    navigate("/connexion", {
+      replace: true,
+    });
+  }
+
+  function estRouteExacte(path: string) {
+    return (
+      path === "/admin" ||
+      path === "/admin/dashboard" ||
+      path === "/dashboard" ||
+      path === "/exercices" ||
+      path === "/historique" ||
+      path === "/notifications" ||
+      path === "/premium" ||
+      path === "/profil" ||
+      path === "/parametres" ||
+      path === "/diagnostic"
+    );
+  }
+
+  const contenuSidebar = (
+    <div className="flex h-full min-h-0 flex-col">
+
+      {/* =========================
+          EN-TÊTE MOBILE
+      ========================== */}
+      <div className="flex items-center justify-between border-b border-blue-100 px-5 py-4 lg:hidden">
+        <div>
+          <p className="text-sm font-bold text-blue-950">
+            {admin ? "Administration" : "CodeDoctor"}
+          </p>
+
+          <p className="mt-0.5 text-xs text-blue-500">
+            {admin
+              ? "Espace administrateur"
+              : "Espace utilisateur"}
+          </p>
+        </div>
+
+        <button
+          type="button"
           onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+          className="
+            rounded-xl
+            p-2
+            text-blue-500
+            transition
+            hover:bg-blue-50
+            hover:text-blue-700
+          "
+          aria-label="Fermer le menu"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-      <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: open ? 0 : -300 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={`
-          fixed inset-y-0 left-0 z-50
-          w-64 border-r border-blue-200/80
-          bg-white/95 backdrop-blur-xl
-          transition-transform duration-300
-          lg:static lg:z-auto lg:translate-x-0
-          ${open ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        <div className="flex h-full flex-col">
-          {/* En-tête mobile */}
+      {/* =========================
+          IDENTITÉ
+      ========================== */}
+      <div className="border-b border-blue-100 px-5 py-5">
+        <div className="flex items-center gap-3">
 
-          <div className="flex items-center justify-between px-4 py-5 lg:hidden">
-            <span className="text-sm font-semibold text-zinc-900">
-              Menu
-            </span>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={onClose}
-              className="
-                rounded-lg
-                p-2
-                text-zinc-500
-                transition
-                hover:bg-blue-50
-                hover:text-blue-600
-              "
-              aria-label="Fermer le menu"
-            >
-              <X size={19} />
-            </motion.button>
+          <div
+            className="
+              flex
+              h-11
+              w-11
+              shrink-0
+              items-center
+              justify-center
+              rounded-2xl
+              bg-gradient-to-br
+              from-blue-600
+              to-cyan-500
+              text-sm
+              font-bold
+              text-white
+              shadow-md
+              shadow-blue-500/20
+            "
+          >
+            {admin ? "A" : "U"}
           </div>
 
-          {/* Navigation */}
-
-          <div className="flex-1 overflow-y-auto px-3 pt-6 lg:pt-7">
-            <p
-              className="
-                px-3
-                text-[11px]
-                font-semibold
-                uppercase
-                tracking-[0.16em]
-                text-zinc-400
-              "
-            >
-              {admin ? "Administration" : "Navigation"}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-blue-950">
+              {utilisateur?.displayName ||
+                (admin
+                  ? "Administrateur"
+                  : "Utilisateur")}
             </p>
 
-            <nav className="mt-3 space-y-1">
-              {items.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={onClose}
-                    end={
-                      item.path === "/admin" ||
-                      item.path === "/dashboard" ||
-                      item.path === "/exercices" ||
-                      item.path === "/historique" ||
-                      item.path === "/notifications" ||
-                      item.path === "/premium" ||
-                      item.path === "/profil" ||
-                      item.path === "/parametres" ||
-                      item.path === "/diagnostic"
-                    }
-                    className={({ isActive }) =>
-                      `
-                      group
-                      flex
-                      items-center
-                      gap-3
-                      rounded-xl
-                      px-3
-                      py-2.5
-                      text-sm
-                      font-medium
-                      transition-all
-                      ${
-                        isActive
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/30"
-                          : "text-zinc-600 hover:bg-blue-50 hover:text-blue-700"
-                      }
-                      `
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <Icon
-                          size={18}
-                          strokeWidth={isActive ? 2.2 : 1.9}
-                        />
-
-                        <span>{item.label}</span>
-
-                        {!admin &&
-                          item.path ===
-                            "/notifications" && (
-                            <span className="ml-auto h-2 w-2 rounded-full bg-zinc-300 group-[.active]:bg-white" />
-                          )}
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })}
-            </nav>
+            <p className="truncate text-xs text-blue-500">
+              {utilisateur?.email || ""}
+            </p>
           </div>
 
-          {/* Bloc inférieur */}
-
-          <div className="mt-auto border-t border-zinc-100 p-4">
-            <div className="rounded-xl bg-zinc-50 px-3 py-3">
-              <p className="text-xs font-medium text-zinc-900">
-                {admin
-                  ? "Espace administrateur"
-                  : "Espace utilisateur"}
-              </p>
-
-              <p
-                className="
-                  mt-1
-                  text-[11px]
-                  leading-4
-                  text-zinc-500
-                "
-              >
-                {admin
-                  ? "Gestion et supervision de CodeDoctor"
-                  : "Accédez à vos fonctionnalités CodeDoctor"}
-              </p>
-            </div>
-          </div>
         </div>
-      </motion.aside>
+      </div>
+
+      {/* =========================
+          NAVIGATION
+      ========================== */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
+
+        <p
+          className="
+            px-3
+            text-[11px]
+            font-bold
+            uppercase
+            tracking-[0.16em]
+            text-blue-400
+          "
+        >
+          {admin
+            ? "Administration"
+            : "Navigation"}
+        </p>
+
+        <nav className="mt-3 space-y-1.5">
+
+          {items.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                end={estRouteExacte(item.path)}
+                className={({ isActive }) =>
+                  `
+                    group
+                    flex
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3.5
+                    py-3
+                    text-sm
+                    font-medium
+                    transition-all
+                    ${
+                      isActive
+                        ? `
+                          bg-gradient-to-r
+                          from-blue-600
+                          to-cyan-500
+                          text-white
+                          shadow-md
+                          shadow-blue-500/20
+                        `
+                        : `
+                          text-blue-900
+                          hover:bg-blue-50
+                          hover:text-blue-700
+                        `
+                    }
+                  `
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={`
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        transition
+                        ${
+                          isActive
+                            ? "bg-white/15"
+                            : "bg-blue-50 group-hover:bg-blue-100"
+                        }
+                      `}
+                    >
+                      <Icon
+                        size={18}
+                        strokeWidth={
+                          isActive ? 2.3 : 2
+                        }
+                      />
+                    </span>
+
+                    <span className="truncate">
+                      {item.label}
+                    </span>
+
+                    {isActive && (
+                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+
+        </nav>
+      </div>
+
+      {/* =========================
+          PARTIE BASSE
+      ========================== */}
+      <div className="border-t border-blue-100 p-4">
+
+        <div
+          className="
+            mb-3
+            rounded-xl
+            border
+            border-blue-100
+            bg-blue-50/70
+            px-3
+            py-3
+          "
+        >
+          <p className="text-xs font-semibold text-blue-900">
+            {admin
+              ? "Espace administrateur"
+              : "Espace utilisateur"}
+          </p>
+
+          <p className="mt-1 text-[11px] leading-4 text-blue-600">
+            {admin
+              ? "Gestion et supervision de CodeDoctor"
+              : "Accédez à vos fonctionnalités CodeDoctor"}
+          </p>
+        </div>
+
+        {/* Déconnexion */}
+        <button
+          type="button"
+          onClick={gererDeconnexion}
+          className="
+            group
+            flex
+            w-full
+            items-center
+            gap-3
+            rounded-xl
+            border
+            border-blue-100
+            bg-white
+            px-3.5
+            py-3
+            text-sm
+            font-semibold
+            text-blue-700
+            transition
+            hover:border-blue-200
+            hover:bg-blue-50
+            hover:text-blue-800
+          "
+        >
+          <span
+            className="
+              flex
+              h-9
+              w-9
+              items-center
+              justify-center
+              rounded-lg
+              bg-blue-50
+              transition
+              group-hover:bg-blue-100
+            "
+          >
+            <LogOut
+              size={18}
+              strokeWidth={2}
+            />
+          </span>
+
+          <span>Déconnexion</span>
+        </button>
+
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* =========================
+          SIDEBAR DESKTOP
+          Toujours visible à partir de lg
+      ========================== */}
+      <aside
+        className="
+          hidden
+          h-[calc(100vh-68px)]
+          w-72
+          shrink-0
+          flex-col
+          border-r
+          border-blue-100
+          bg-white
+          shadow-xl
+          shadow-blue-900/5
+          lg:flex
+          lg:sticky
+          lg:top-[68px]
+        "
+      >
+        {contenuSidebar}
+      </aside>
+
+      {/* =========================
+          SIDEBAR MOBILE
+      ========================== */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="
+                fixed
+                inset-0
+                z-40
+                bg-blue-950/30
+                backdrop-blur-sm
+                lg:hidden
+              "
+              onClick={onClose}
+              aria-hidden="true"
+            />
+
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+              className="
+                fixed
+                inset-y-0
+                left-0
+                z-50
+                flex
+                w-72
+                flex-col
+                border-r
+                border-blue-100
+                bg-white
+                shadow-2xl
+                shadow-blue-950/20
+                lg:hidden
+              "
+            >
+              {contenuSidebar}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }
