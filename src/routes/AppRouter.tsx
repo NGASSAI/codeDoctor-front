@@ -33,6 +33,8 @@ import ExperienceDetailPage from "../pages/public/ExperienceDetailPage";
 import HistoriqueDetailPage from "../pages/user/HistoriqueDetailPage";
 import ConversationPage from "../pages/user/ConversationPage";
 import MotDePasseOubliePage from "../pages/auth/MotDePasseOubliePage";
+import ReinitialiserMotDePassePage from "../pages/auth/ReinitialiserMotDePassePage";
+import VerificationEmailPage from "../pages/auth/VerificationEmailPage";
 
 export default function AppRouter() {
   return (
@@ -76,6 +78,15 @@ export default function AppRouter() {
           <Route
   path="/mot-de-passe-oublie"
   element={<MotDePasseOubliePage />}
+  
+/>
+<Route
+  path="/reinitialiser-mot-de-passe"
+  element={<ReinitialiserMotDePassePage />}
+/>
+<Route
+  path="/verification-email"
+  element={<VerificationEmailPage />}
 />
         </Route>
 

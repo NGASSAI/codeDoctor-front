@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
+
+import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -18,7 +18,10 @@ interface InscriptionResponse {
     id: string;
     email: string;
     displayName: string | null;
+    emailVerified: boolean;
   };
+
+  tokenVerification: string;
   message: string;
 }
 
@@ -33,58 +36,114 @@ export default function InscriptionPage() {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [confirmerMotDePasse, setConfirmerMotDePasse] = useState("");
-  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
-  const [afficherConfirmation, setAfficherConfirmation] = useState(false);
+  const [confirmerMotDePasse, setConfirmerMotDePasse] =
+    useState("");
+
+  const [afficherMotDePasse, setAfficherMotDePasse] =
+    useState(false);
+
+  const [afficherConfirmation, setAfficherConfirmation] =
+    useState(false);
 
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState("");
   const [succes, setSucces] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setErreur("");
     setSucces(false);
 
     const nomNormalise = nom.trim();
-    const emailNormalise = email.trim();
+    const emailNormalise = email.trim().toLowerCase();
 
-    if (!nomNormalise || !emailNormalise || !motDePasse || !confirmerMotDePasse) {
-      setErreur("Veuillez remplir tous les champs.");
+    if (
+      !nomNormalise ||
+      !emailNormalise ||
+      !motDePasse ||
+      !confirmerMotDePasse
+    ) {
+      setErreur(
+        "Veuillez remplir tous les champs."
+      );
+      return;
+    }
+
+    if (nomNormalise.length < 2) {
+      setErreur(
+        "Le nom doit contenir au moins 2 caractères."
+      );
+      return;
+    }
+
+    if (motDePasse.length < 8) {
+      setErreur(
+        "Le mot de passe doit contenir au moins 8 caractères."
+      );
       return;
     }
 
     if (motDePasse !== confirmerMotDePasse) {
-      setErreur("Les mots de passe ne correspondent pas.");
-      return;
-    }
-
-    if (motDePasse.length < 6) {
-      setErreur("Le mot de passe doit contenir au moins 6 caractères.");
+      setErreur(
+        "Les mots de passe ne correspondent pas."
+      );
       return;
     }
 
     try {
       setChargement(true);
 
-      const response = await api.post<InscriptionResponse>(
-        "/auth/inscription",
-        {
-          displayName: nomNormalise,
-          email: emailNormalise,
-          motDePasse,
-        }
-      );
+      const response =
+        await api.post<InscriptionResponse>(
+          "/auth/inscription",
+          {
+            displayName: nomNormalise,
+            email: emailNormalise,
+            motDePasse,
+          }
+        );
 
-      if (response.data.message) {
-        setSucces(true);
-        setTimeout(() => {
-          navigate("/connexion");
-        }, 2000);
+      const {
+        utilisateur,
+        tokenVerification,
+      } = response.data;
+
+      if (
+        !utilisateur ||
+        !tokenVerification
+      ) {
+        setErreur(
+          "La réponse du serveur est invalide."
+        );
+        return;
       }
+
+      setSucces(true);
+
+      /*
+       * Le backend retourne actuellement le token
+       * directement pour permettre les tests.
+       *
+       * Lorsque l'envoi d'email sera activé,
+       * cette redirection sera remplacée par une
+       * page indiquant que le lien a été envoyé.
+       */
+     navigate(
+  `/verification-email?token=${encodeURIComponent(
+    response.data.tokenVerification
+  )}`,
+  {
+    replace: true,
+  }
+);
     } catch (error: unknown) {
-      console.error("Erreur d'inscription :", error);
+      console.error(
+        "Erreur d'inscription :",
+        error
+      );
 
       if (axios.isAxiosError<ErreurApi>(error)) {
         const message =
@@ -94,7 +153,9 @@ export default function InscriptionPage() {
 
         setErreur(message);
       } else {
-        setErreur("Une erreur inattendue est survenue.");
+        setErreur(
+          "Une erreur inattendue est survenue."
+        );
       }
     } finally {
       setChargement(false);
@@ -104,47 +165,53 @@ export default function InscriptionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
-
         {/* =========================
             PRÉSENTATION
         ========================== */}
 
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900 lg:flex">
           <div className="absolute inset-0">
-            <motion.div 
-              animate={{ 
+            <motion.div
+              animate={{
                 scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3]
+                opacity: [0.3, 0.5, 0.3],
               }}
-              transition={{ 
-                duration: 8, 
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl" 
-            />
-
-            <motion.div 
-              animate={{ 
-                scale: [1, 1.3, 1],
-                opacity: [0.2, 0.4, 0.2]
-              }}
-              transition={{ 
-                duration: 10, 
+              transition={{
+                duration: 8,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: 1
               }}
-              className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-blue-400/20 blur-3xl" 
+              className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl"
+            />
+
+            <motion.div
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+              className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-blue-400/20 blur-3xl"
             />
           </div>
 
           <div className="relative flex w-full flex-col justify-between p-12 xl:p-16">
-
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: -20,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.6,
+              }}
               className="flex items-center gap-3"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-900 shadow-lg">
@@ -156,10 +223,19 @@ export default function InscriptionPage() {
               </span>
             </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 20,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.8,
+                delay: 0.2,
+              }}
               className="max-w-xl"
             >
               <p className="mb-5 text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
@@ -176,15 +252,14 @@ export default function InscriptionPage() {
 
               <p className="mt-6 max-w-lg text-base leading-7 text-blue-200">
                 Rejoignez la communauté de développeurs,
-                améliorez vos compétences et résolvez
-                des bugs techniques avec CodeDoctor.
+                améliorez vos compétences et résolvez des
+                problèmes techniques avec CodeDoctor.
               </p>
             </motion.div>
 
             <p className="text-xs text-blue-300">
               CodeDoctor · Plateforme technique
             </p>
-
           </div>
         </section>
 
@@ -193,18 +268,24 @@ export default function InscriptionPage() {
         ========================== */}
 
         <section className="flex items-center justify-center px-5 py-12 sm:px-8">
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: 20,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
             className="w-full max-w-md"
           >
-
             {/* Logo mobile */}
 
             <div className="mb-10 lg:hidden">
               <div className="flex items-center gap-3">
-
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
                   <Code2 size={20} />
                 </div>
@@ -212,7 +293,6 @@ export default function InscriptionPage() {
                 <span className="text-xl font-semibold tracking-tight text-zinc-950">
                   CodeDoctor
                 </span>
-
               </div>
             </div>
 
@@ -238,13 +318,18 @@ export default function InscriptionPage() {
               onSubmit={handleSubmit}
               className="mt-8 space-y-5"
             >
-
               {/* Erreur */}
 
               {erreur && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{
+                    opacity: 0,
+                    y: -10,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
                   role="alert"
                   className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700"
                 >
@@ -256,12 +341,19 @@ export default function InscriptionPage() {
 
               {succes && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  role="alert"
+                  initial={{
+                    opacity: 0,
+                    y: -10,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  role="status"
                   className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm leading-5 text-green-700"
                 >
-                  Compte créé avec succès ! Redirection...
+                  Compte créé avec succès. Vérification de
+                  votre adresse email...
                 </motion.div>
               )}
 
@@ -280,7 +372,9 @@ export default function InscriptionPage() {
                   type="text"
                   autoComplete="name"
                   value={nom}
-                  onChange={(event) => setNom(event.target.value)}
+                  onChange={(event) =>
+                    setNom(event.target.value)
+                  }
                   placeholder="Votre nom"
                   disabled={chargement}
                   className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
@@ -302,7 +396,9 @@ export default function InscriptionPage() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) =>
+                    setEmail(event.target.value)
+                  }
                   placeholder="vous@exemple.com"
                   disabled={chargement}
                   className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
@@ -320,32 +416,50 @@ export default function InscriptionPage() {
                 </label>
 
                 <div className="relative">
-
                   <input
                     id="motDePasse"
-                    type={afficherMotDePasse ? "text" : "password"}
+                    type={
+                      afficherMotDePasse
+                        ? "text"
+                        : "password"
+                    }
                     autoComplete="new-password"
                     value={motDePasse}
-                    onChange={(event) => setMotDePasse(event.target.value)}
-                    placeholder="Votre mot de passe"
+                    onChange={(event) =>
+                      setMotDePasse(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Minimum 8 caractères"
                     disabled={chargement}
                     className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
                   />
 
                   <button
                     type="button"
-                    onClick={() => setAfficherMotDePasse((value) => !value)}
+                    onClick={() =>
+                      setAfficherMotDePasse(
+                        (value) => !value
+                      )
+                    }
                     disabled={chargement}
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    aria-label={afficherMotDePasse ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    aria-label={
+                      afficherMotDePasse
+                        ? "Masquer le mot de passe"
+                        : "Afficher le mot de passe"
+                    }
                   >
-                    {afficherMotDePasse ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {afficherMotDePasse ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
-
                 </div>
               </div>
 
-              {/* Confirmation mot de passe */}
+              {/* Confirmation */}
 
               <div>
                 <label
@@ -356,13 +470,20 @@ export default function InscriptionPage() {
                 </label>
 
                 <div className="relative">
-
                   <input
                     id="confirmerMotDePasse"
-                    type={afficherConfirmation ? "text" : "password"}
+                    type={
+                      afficherConfirmation
+                        ? "text"
+                        : "password"
+                    }
                     autoComplete="new-password"
                     value={confirmerMotDePasse}
-                    onChange={(event) => setConfirmerMotDePasse(event.target.value)}
+                    onChange={(event) =>
+                      setConfirmerMotDePasse(
+                        event.target.value
+                      )
+                    }
                     placeholder="Confirmez votre mot de passe"
                     disabled={chargement}
                     className="h-12 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-zinc-50"
@@ -370,18 +491,29 @@ export default function InscriptionPage() {
 
                   <button
                     type="button"
-                    onClick={() => setAfficherConfirmation((value) => !value)}
+                    onClick={() =>
+                      setAfficherConfirmation(
+                        (value) => !value
+                      )
+                    }
                     disabled={chargement}
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    aria-label={afficherConfirmation ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    aria-label={
+                      afficherConfirmation
+                        ? "Masquer le mot de passe"
+                        : "Afficher le mot de passe"
+                    }
                   >
-                    {afficherConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {afficherConfirmation ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
-
                 </div>
               </div>
 
-              {/* Bouton inscription */}
+              {/* Bouton */}
 
               <motion.button
                 type="submit"
@@ -392,27 +524,33 @@ export default function InscriptionPage() {
               >
                 {chargement ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
                     Création...
                   </>
                 ) : (
                   <>
                     Créer mon compte
-                    <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-0.5"
+                    />
                   </>
                 )}
               </motion.button>
-
             </form>
 
             {/* Informations */}
 
             <p className="mt-8 text-center text-xs leading-5 text-zinc-400">
-              En créant un compte, vous acceptez les conditions
-              d'utilisation de CodeDoctor.
+              En créant un compte, vous acceptez les
+              conditions d'utilisation de CodeDoctor.
             </p>
 
-            {/* Lien connexion */}
+            {/* Connexion */}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-zinc-600">
@@ -425,10 +563,8 @@ export default function InscriptionPage() {
                 </Link>
               </p>
             </div>
-
           </motion.div>
         </section>
-
       </div>
     </div>
   );
