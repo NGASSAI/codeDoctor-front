@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import SEO from "../../components/seo/SEO";
 const fonctionnalites = [
   {
     icon: Sparkles,
@@ -60,7 +60,13 @@ const etapes = [
 
 export default function AccueilPage() {
   return (
+    
     <div className="min-h-screen bg-white text-zinc-950">
+      <SEO
+  title="CodeDoctor — Plateforme technique pour développeurs"
+  description="CodeDoctor aide les développeurs à comprendre leurs erreurs, analyser leur code, apprendre grâce à des exercices et partager leurs expériences techniques."
+  canonical="https://code-doctor-front.vercel.app/"
+/>
       {/* =========================
           HERO
       ========================== */}

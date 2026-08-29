@@ -59,6 +59,7 @@ function nomCategorie(
 categorie: CategorieExperience
 ) {
 return (
+  
 CATEGORIES.find(
 (item) => item.valeur === categorie
 )?.label ?? categorie

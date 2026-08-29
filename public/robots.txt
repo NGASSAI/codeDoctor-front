@@ -1,0 +1,16 @@
+
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /diagnostic
+Disallow: /exercices
+Disallow: /historique
+Disallow: /notifications
+Disallow: /premium
+Disallow: /profil
+Disallow: /parametres
+Disallow: /discussions
+Disallow: /admin
+
+Sitemap: https://code-doctor-front.vercel.app/sitemap.xml
