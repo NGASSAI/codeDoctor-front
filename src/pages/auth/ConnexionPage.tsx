@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  ArrowLeft,
   ArrowRight,
   Code2,
   Eye,
@@ -134,6 +135,18 @@ export default function ConnexionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+      {/* Bouton de retour */}
+      <motion.button
+        type="button"
+        onClick={() => navigate("/")}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-xl border border-blue-200 bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 lg:left-8 lg:top-8"
+      >
+        <ArrowLeft size={16} />
+        <span>Retour</span>
+      </motion.button>
+
       <div className="grid min-h-screen lg:grid-cols-2">
 
         {/* =========================
@@ -142,37 +155,37 @@ export default function ConnexionPage() {
 
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900 lg:flex">
           <div className="absolute inset-0">
-            <motion.div 
-              animate={{ 
+            <motion.div
+              animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.3, 0.5, 0.3]
               }}
-              transition={{ 
-                duration: 8, 
+              transition={{
+                duration: 8,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl" 
+              className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl"
             />
 
-            <motion.div 
-              animate={{ 
+            <motion.div
+              animate={{
                 scale: [1, 1.3, 1],
                 opacity: [0.2, 0.4, 0.2]
               }}
-              transition={{ 
-                duration: 10, 
+              transition={{
+                duration: 10,
                 repeat: Infinity,
                 ease: "easeInOut",
                 delay: 1
               }}
-              className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-blue-400/20 blur-3xl" 
+              className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-blue-400/20 blur-3xl"
             />
           </div>
 
           <div className="relative flex w-full flex-col justify-between p-12 xl:p-16">
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}

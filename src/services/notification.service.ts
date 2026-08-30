@@ -51,3 +51,15 @@ export async function supprimerNotification(
     `/notifications/${encodeURIComponent(id)}`
   );
 }
+
+export async function creerNotificationAdmin(
+  titre: string,
+  message: string,
+  type: "INFO" | "SUCCESS" | "WARNING" | "ERROR" = "INFO"
+): Promise<void> {
+  await api.post("/notifications/admin", {
+    titre,
+    message,
+    type,
+  });
+}

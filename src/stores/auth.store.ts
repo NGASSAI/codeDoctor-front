@@ -1,5 +1,8 @@
 import { create } from "zustand";
 
+import { deconnecterSocket } from "../services/socket.service";
+import { useNotificationStore } from "./notification.store";
+
 export interface Utilisateur {
   id: string;
   email: string;
@@ -20,9 +23,7 @@ interface AuthState {
     token: string,
     refreshToken: string
   ) => void;
-  mettreAJourUtilisateur: (
-    utilisateur: Utilisateur
-  ) => void;
+  mettreAJourUtilisateur: (utilisateur: Utilisateur) => void;
   deconnecter: () => void;
 }
 
@@ -50,8 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initialiser: () => {
     const token = localStorage.getItem("token");
-    const refreshToken =
-      localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem("refreshToken");
     const utilisateur = recupererUtilisateur();
 
     set({
@@ -63,20 +63,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  definirSession: (
-    utilisateur,
-    token,
-    refreshToken
-  ) => {
+  definirSession: (utilisateur, token, refreshToken) => {
     localStorage.setItem("token", token);
-    localStorage.setItem(
-      "refreshToken",
-      refreshToken
-    );
-    localStorage.setItem(
-      "utilisateur",
-      JSON.stringify(utilisateur)
-    );
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("utilisateur", JSON.stringify(utilisateur));
 
     set({
       utilisateur,
@@ -88,10 +78,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   mettreAJourUtilisateur: (utilisateur) => {
-    localStorage.setItem(
-      "utilisateur",
-      JSON.stringify(utilisateur)
-    );
+    localStorage.setItem("utilisateur", JSON.stringify(utilisateur));
 
     set({
       utilisateur,
@@ -110,5 +97,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       connecte: false,
       initialise: true,
     });
+
+    deconnecterSocket();
+    useNotificationStore.getState().reinitialiser();
   },
 }));

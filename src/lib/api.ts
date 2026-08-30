@@ -25,3 +25,25 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+/**
+ * Gère les erreurs de réponse et normalise les messages d'erreur.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Normaliser les messages d'erreur du backend
+    if (error.response?.data) {
+      const backendError = error.response.data;
+      
+      // Si le backend renvoie un message d'erreur, l'utiliser
+      if (backendError.erreur) {
+        error.message = backendError.erreur;
+      } else if (backendError.message) {
+        error.message = backendError.message;
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);

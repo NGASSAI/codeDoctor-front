@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-cyan-50">
       <Navbar
         onMenuClick={() => setSidebarOpen(true)}
         admin

@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useState,
@@ -43,7 +42,7 @@ function formaterDate(date: string) {
   }).format(valeur);
 }
 
-export default function ProfilPage() {
+export default function ProfilAdminPage() {
   const mettreAJourUtilisateur =
     useAuthStore(
       (state) => state.mettreAJourUtilisateur
@@ -128,7 +127,7 @@ export default function ProfilPage() {
         );
       } catch (error) {
         console.error(
-          "Erreur chargement profil :",
+          "Erreur chargement profil admin :",
           error
         );
 
@@ -365,10 +364,10 @@ export default function ProfilPage() {
           <div className="flex flex-col items-center">
             <Loader2
               size={28}
-              className="animate-spin text-zinc-400"
+              className="animate-spin text-blue-500"
             />
 
-            <p className="mt-4 text-sm text-zinc-600">
+            <p className="mt-4 text-sm text-blue-900">
               Chargement du profil...
             </p>
           </div>
@@ -380,18 +379,18 @@ export default function ProfilPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8">
       <section>
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600">
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
           <UserRound size={14} />
-          Profil
+          Administration
         </div>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
-          Mon profil
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-blue-950">
+          Profil administrateur
         </h1>
 
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
-          Gérez les informations principales de votre
-          compte CodeDoctor.
+        <p className="mt-3 text-sm leading-6 text-blue-700">
+          Gérez les informations de votre compte administrateur
+          CodeDoctor.
         </p>
       </section>
 
@@ -422,25 +421,31 @@ export default function ProfilPage() {
         <>
           {/* Présentation */}
 
-          <Card className="p-6 sm:p-8">
+          <Card className="border-blue-100 p-6 sm:p-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-semibold text-white">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-cyan-600 text-lg font-semibold text-white shadow-lg shadow-blue-500/30">
                 {(
                   profil.displayName ||
                   profil.email.split("@")[0] ||
-                  "U"
+                  "A"
                 )
                   .charAt(0)
                   .toUpperCase()}
               </div>
 
-              <div>
-                <h2 className="text-lg font-semibold text-zinc-950">
-                  {profil.displayName ||
-                    "Utilisateur CodeDoctor"}
-                </h2>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold text-blue-950">
+                    {profil.displayName ||
+                      "Administrateur CodeDoctor"}
+                  </h2>
 
-                <p className="mt-1 text-sm text-zinc-500">
+                  <Badge variant="warning">
+                    Admin
+                  </Badge>
+                </div>
+
+                <p className="mt-1 text-sm text-blue-700">
                   Membre depuis{" "}
                   {formaterDate(
                     profil.createdAt
@@ -452,16 +457,16 @@ export default function ProfilPage() {
 
           {/* Informations personnelles */}
 
-          <Card className="p-6 sm:p-8">
+          <Card className="border-blue-100 p-6 sm:p-8">
             <form
               onSubmit={enregistrerProfil}
             >
               <div>
-                <h2 className="text-base font-semibold text-zinc-950">
+                <h2 className="text-base font-bold text-blue-950">
                   Informations personnelles
                 </h2>
 
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-blue-700">
                   Vous pouvez modifier votre nom affiché.
                 </p>
               </div>
@@ -469,7 +474,7 @@ export default function ProfilPage() {
               <div className="mt-6">
                 <label
                   htmlFor="displayName"
-                  className="text-sm font-medium text-zinc-800"
+                  className="text-sm font-semibold text-blue-900"
                 >
                   Nom affiché
                 </label>
@@ -477,7 +482,7 @@ export default function ProfilPage() {
                 <div className="relative mt-2">
                   <UserRound
                     size={17}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-400"
                   />
 
                   <input
@@ -494,11 +499,11 @@ export default function ProfilPage() {
                       sauvegardeProfil
                     }
                     placeholder="Votre nom affiché"
-                    className="h-11 w-full rounded-xl border border-zinc-200 bg-white pl-10 pr-4 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5"
+                    className="h-11 w-full rounded-xl border border-blue-200 bg-white pl-10 pr-4 text-sm text-blue-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5"
                   />
                 </div>
 
-                <p className="mt-2 text-xs text-zinc-400">
+                <p className="mt-2 text-xs text-blue-600">
                   Maximum 50 caractères.
                 </p>
               </div>
@@ -508,7 +513,7 @@ export default function ProfilPage() {
                 disabled={
                   sauvegardeProfil
                 }
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 shadow-md shadow-blue-500/20"
               >
                 {sauvegardeProfil && (
                   <Loader2
@@ -524,15 +529,15 @@ export default function ProfilPage() {
 
           {/* Email */}
 
-          <Card className="p-6 sm:p-8">
+          <Card className="border-blue-100 p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="rounded-xl bg-zinc-100 p-2.5 text-zinc-700">
+              <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600">
                 <Mail size={18} />
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-base font-semibold text-zinc-950">
+                  <h2 className="text-base font-bold text-blue-950">
                     Adresse email
                   </h2>
 
@@ -549,10 +554,10 @@ export default function ProfilPage() {
                   </Badge>
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 text-sm text-zinc-600">
+                <div className="mt-3 flex items-center gap-2 text-sm text-blue-700">
                   <AtSign
                     size={16}
-                    className="shrink-0 text-zinc-400"
+                    className="shrink-0 text-blue-400"
                   />
 
                   <span className="break-all">
@@ -560,7 +565,7 @@ export default function ProfilPage() {
                   </span>
                 </div>
 
-                <p className="mt-3 text-xs leading-5 text-zinc-400">
+                <p className="mt-3 text-xs leading-5 text-blue-600">
                   L'adresse email ne peut pas être modifiée
                   depuis cet écran.
                 </p>
@@ -570,18 +575,18 @@ export default function ProfilPage() {
 
           {/* Sécurité */}
 
-          <Card className="p-6 sm:p-8">
+          <Card className="border-blue-100 p-6 sm:p-8">
             <div className="flex items-start gap-4">
               <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600">
                 <ShieldCheck size={18} />
               </div>
 
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-zinc-950">
+                <h2 className="text-base font-bold text-blue-950">
                   Sécurité du compte
                 </h2>
 
-                <p className="mt-1 text-sm leading-6 text-zinc-500">
+                <p className="mt-1 text-sm leading-6 text-blue-700">
                   Configurez une phrase secrète qui pourra être
                   utilisée pour récupérer votre compte si vous
                   oubliez votre mot de passe.
@@ -598,17 +603,17 @@ export default function ProfilPage() {
             )}
 
             {profil.recoveryHint && (
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+              <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
                   Votre indice actuel
                 </p>
 
-                <p className="mt-2 text-sm font-medium leading-6 text-blue-950">
+                <p className="mt-2 text-sm font-semibold leading-6 text-blue-950">
                   {profil.recoveryHint}
                 </p>
 
                 <p className="mt-2 text-xs leading-5 text-blue-700">
-                  Votre phrase secrète n’est jamais affichée ni
+                  Votre phrase secrète n'est jamais affichée ni
                   stockée en clair.
                 </p>
               </div>
@@ -636,7 +641,7 @@ export default function ProfilPage() {
               <div>
                 <label
                   htmlFor="recoveryAnswer"
-                  className="text-sm font-medium text-zinc-800"
+                  className="text-sm font-semibold text-blue-900"
                 >
                   Phrase secrète
                 </label>
@@ -644,7 +649,7 @@ export default function ProfilPage() {
                 <div className="relative mt-2">
                   <KeyRound
                     size={17}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-400"
                   />
 
                   <input
@@ -665,7 +670,7 @@ export default function ProfilPage() {
                       sauvegardeSecurite
                     }
                     placeholder="Votre phrase secrète"
-                    className="h-11 w-full rounded-xl border border-zinc-200 bg-white pl-10 pr-12 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5"
+                    className="h-11 w-full rounded-xl border border-blue-200 bg-white pl-10 pr-12 text-sm text-blue-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5"
                   />
 
                   <button
@@ -683,7 +688,7 @@ export default function ProfilPage() {
                         ? "Masquer la phrase secrète"
                         : "Afficher la phrase secrète"
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-blue-400 hover:bg-blue-100 hover:text-blue-700"
                   >
                     {afficherPhrase ? (
                       <EyeOff size={17} />
@@ -693,7 +698,7 @@ export default function ProfilPage() {
                   </button>
                 </div>
 
-                <p className="mt-2 text-xs leading-5 text-zinc-400">
+                <p className="mt-2 text-xs leading-5 text-blue-600">
                   Minimum 8 caractères. Choisissez une phrase
                   personnelle difficile à deviner.
                 </p>
@@ -704,7 +709,7 @@ export default function ProfilPage() {
               <div>
                 <label
                   htmlFor="confirmationPhrase"
-                  className="text-sm font-medium text-zinc-800"
+                  className="text-sm font-semibold text-blue-900"
                 >
                   Confirmer la phrase secrète
                 </label>
@@ -730,7 +735,7 @@ export default function ProfilPage() {
                       sauvegardeSecurite
                     }
                     placeholder="Confirmez votre phrase"
-                    className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 pr-12 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5"
+                    className="h-11 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-blue-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5"
                   />
 
                   <button
@@ -748,7 +753,7 @@ export default function ProfilPage() {
                         ? "Masquer la confirmation"
                         : "Afficher la confirmation"
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-blue-400 hover:bg-blue-100 hover:text-blue-700"
                   >
                     {afficherConfirmationPhrase ? (
                       <EyeOff size={17} />
@@ -764,7 +769,7 @@ export default function ProfilPage() {
               <div>
                 <label
                   htmlFor="recoveryHint"
-                  className="text-sm font-medium text-zinc-800"
+                  className="text-sm font-semibold text-blue-900"
                 >
                   Indice de récupération
                 </label>
@@ -783,10 +788,10 @@ export default function ProfilPage() {
                     sauvegardeSecurite
                   }
                   placeholder="Ex. Mon premier ordinateur"
-                  className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5"
+                  className="mt-2 h-11 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-blue-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5"
                 />
 
-                <p className="mt-2 text-xs leading-5 text-zinc-400">
+                <p className="mt-2 text-xs leading-5 text-blue-600">
                   Cet indice sera visible lors de la récupération
                   du compte. Il ne doit pas révéler directement
                   votre phrase.
@@ -799,7 +804,7 @@ export default function ProfilPage() {
                 <div>
                   <label
                     htmlFor="motDePasseActuel"
-                    className="text-sm font-medium text-zinc-800"
+                    className="text-sm font-semibold text-blue-900"
                   >
                     Mot de passe actuel
                   </label>
@@ -825,7 +830,7 @@ export default function ProfilPage() {
                         sauvegardeSecurite
                       }
                       placeholder="Requis pour modifier la phrase existante"
-                      className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 pr-12 text-sm text-zinc-900 outline-none focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5"
+                      className="h-11 w-full rounded-xl border border-blue-200 bg-white px-4 pr-12 text-sm text-blue-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5"
                     />
 
                     <button
@@ -843,7 +848,7 @@ export default function ProfilPage() {
                           ? "Masquer le mot de passe actuel"
                           : "Afficher le mot de passe actuel"
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-blue-400 hover:bg-blue-100 hover:text-blue-700"
                     >
                       {afficherMotDePasseActuel ? (
                         <EyeOff size={17} />
@@ -853,7 +858,7 @@ export default function ProfilPage() {
                     </button>
                   </div>
 
-                  <p className="mt-2 text-xs leading-5 text-zinc-400">
+                  <p className="mt-2 text-xs leading-5 text-blue-600">
                     Nécessaire uniquement lorsque vous modifiez
                     une phrase secrète déjà configurée.
                   </p>
@@ -865,7 +870,7 @@ export default function ProfilPage() {
                 disabled={
                   sauvegardeSecurite
                 }
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 shadow-md shadow-blue-500/20"
               >
                 {sauvegardeSecurite && (
                   <Loader2

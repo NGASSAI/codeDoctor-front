@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -13,29 +9,17 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ecouterNotification } from "../../services/socket.service";
+
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 
-import {
-  obtenirNotifications,
-  marquerNotificationCommeLue,
-  marquerToutesCommeLues,
-  supprimerNotification,
-} from "../../services/notification.service";
+import { useNotificationStore } from "../../stores/notification.store";
 
-import type {
-  Notification,
-  TypeNotification,
-} from "../../types/notification";
+import type { Notification, TypeNotification } from "../../types/notification";
 
 function formaterDate(date: string) {
   const valeur = new Date(date);
-
-  if (Number.isNaN(valeur.getTime())) {
-    return "Date inconnue";
-  }
-
+  if (Number.isNaN(valeur.getTime())) return "Date inconnue";
   return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -45,35 +29,23 @@ function formaterDate(date: string) {
 function libelleType(type: TypeNotification) {
   switch (type) {
     case "PAIEMENT_APPROUVE":
-      return "Paiement";
-
     case "PAIEMENT_REJETE":
       return "Paiement";
-
     case "EXPERIENCE_APPROUVEE":
-      return "Expérience";
-
     case "EXPERIENCE_REFUSEE":
       return "Expérience";
-
     case "EXPERIENCE_SIGNALEE":
       return "Modération";
-
     case "NOUVEAU_COMMENTAIRE":
       return "Commentaire";
-
     case "NOUVELLE_REACTION":
       return "Réaction";
-
     case "NOUVELLE_EXPERIENCE":
       return "Communauté";
-
     case "NOUVEAU_SIGNALEMENT":
       return "Signalement";
-
     case "NOUVEL_UTILISATEUR":
       return "Compte";
-
     default:
       return "Notification";
   }
@@ -84,221 +56,80 @@ function classeType(type: TypeNotification) {
     case "PAIEMENT_APPROUVE":
     case "EXPERIENCE_APPROUVEE":
       return "success" as const;
-
     case "PAIEMENT_REJETE":
     case "EXPERIENCE_REFUSEE":
     case "EXPERIENCE_SIGNALEE":
       return "danger" as const;
-
     default:
       return "warning" as const;
-  }
-}
-
-function iconeNotification(type: TypeNotification) {
-  switch (type) {
-    case "PAIEMENT_APPROUVE":
-    case "PAIEMENT_REJETE":
-      return "Paiement";
-
-    case "EXPERIENCE_APPROUVEE":
-    case "EXPERIENCE_REFUSEE":
-    case "EXPERIENCE_SIGNALEE":
-      return "Expérience";
-
-    case "NOUVEAU_COMMENTAIRE":
-      return "Commentaire";
-
-    case "NOUVELLE_REACTION":
-      return "Réaction";
-
-    default:
-      return "Information";
   }
 }
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
 
-  const [notifications, setNotifications] =
-    useState<Notification[]>([]);
+  const notifications = useNotificationStore((state) => state.notifications);
+  const chargement = useNotificationStore((state) => state.chargement);
+  const chargerNotifications = useNotificationStore(
+    (state) => state.chargerNotifications
+  );
+  const marquerCommeLueStore = useNotificationStore(
+    (state) => state.marquerCommeLue
+  );
+  const marquerToutesCommeLuesStore = useNotificationStore(
+    (state) => state.marquerToutesCommeLues
+  );
+  const supprimerNotificationStore = useNotificationStore(
+    (state) => state.supprimerNotification
+  );
 
-  const [filtreNonLues, setFiltreNonLues] =
-    useState(false);
-
-  const [chargement, setChargement] =
-    useState(true);
-
-  const [traitementId, setTraitementId] =
-    useState<string | null>(null);
-
+  const [filtreNonLues, setFiltreNonLues] = useState(false);
+  const [traitementId, setTraitementId] = useState<string | null>(null);
   const [erreur, setErreur] = useState("");
 
   useEffect(() => {
-    let actif = true;
-
-    async function charger() {
-      try {
-        setChargement(true);
-        setErreur("");
-
-        const resultat =
-          await obtenirNotifications();
-
-        if (actif) {
-          setNotifications(
-            resultat.notifications
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Erreur lors du chargement des notifications :",
-          error
-        );
-
-        if (actif) {
-          setErreur(
-            "Impossible de récupérer vos notifications."
-          );
-        }
-      } finally {
-        if (actif) {
-          setChargement(false);
-        }
-      }
-    }
-
-    void charger();
-
-    return () => {
-      actif = false;
-    };
-  }, []);
-  
-useEffect(() => {
-  const arreterEcoute = ecouterNotification(
-    (notification) => {
-      if (
-        !notification ||
-        typeof notification !== "object"
-      ) {
-        return;
-      }
-
-      const notificationRecue = notification as Notification;
-
-      setNotifications((anciennes) => {
-        const existeDeja = anciennes.some(
-          (element) =>
-            element.id === notificationRecue.id
-        );
-
-        if (existeDeja) {
-          return anciennes;
-        }
-
-        return [
-          notificationRecue,
-          ...anciennes,
-        ].slice(0, 50);
-      });
-    }
-  );
-
-  return arreterEcoute;
-}, []);
-
-
+    void chargerNotifications();
+  }, [chargerNotifications]);
 
   const notificationsAffichees = useMemo(() => {
-    if (!filtreNonLues) {
-      return notifications;
-    }
-
-    return notifications.filter(
-      (notification) => !notification.lue
-    );
+    if (!filtreNonLues) return notifications;
+    return notifications.filter((notification) => !notification.lue);
   }, [notifications, filtreNonLues]);
 
-  const nombreNonLues = useMemo(() => {
-    return notifications.filter(
-      (notification) => !notification.lue
-    ).length;
-  }, [notifications]);
+  const nombreNonLues = useMemo(
+    () => notifications.filter((notification) => !notification.lue).length,
+    [notifications]
+  );
 
-  async function marquerCommeLue(
-    notification: Notification
-  ) {
+  async function marquerCommeLue(notification: Notification) {
     if (notification.lue) {
-      if (notification.lien) {
-        navigate(notification.lien);
-      }
-
+      if (notification.lien) navigate(notification.lien);
       return;
     }
 
     try {
       setTraitementId(notification.id);
       setErreur("");
-
-      await marquerNotificationCommeLue(
-        notification.id
-      );
-
-      setNotifications((anciennes) =>
-        anciennes.map((element) =>
-          element.id === notification.id
-            ? {
-                ...element,
-                lue: true,
-              }
-            : element
-        )
-      );
-
-      if (notification.lien) {
-        navigate(notification.lien);
-      }
+      await marquerCommeLueStore(notification.id);
+      if (notification.lien) navigate(notification.lien);
     } catch (error) {
-      console.error(
-        "Erreur marquage notification :",
-        error
-      );
-
-      setErreur(
-        "Impossible de marquer cette notification comme lue."
-      );
+      console.error("Erreur marquage notification :", error);
+      setErreur("Impossible de marquer cette notification comme lue.");
     } finally {
       setTraitementId(null);
     }
   }
 
   async function toutMarquerCommeLu() {
-    if (nombreNonLues === 0) {
-      return;
-    }
+    if (nombreNonLues === 0) return;
 
     try {
       setTraitementId("all");
       setErreur("");
-
-      await marquerToutesCommeLues();
-
-      setNotifications((anciennes) =>
-        anciennes.map((notification) => ({
-          ...notification,
-          lue: true,
-        }))
-      );
+      await marquerToutesCommeLuesStore();
     } catch (error) {
-      console.error(
-        "Erreur marquage global :",
-        error
-      );
-
-      setErreur(
-        "Impossible de marquer toutes les notifications comme lues."
-      );
+      console.error("Erreur marquage global :", error);
+      setErreur("Impossible de marquer toutes les notifications comme lues.");
     } finally {
       setTraitementId(null);
     }
@@ -308,34 +139,15 @@ useEffect(() => {
     const confirmer = window.confirm(
       "Voulez-vous vraiment supprimer cette notification ?"
     );
-
-    if (!confirmer) {
-      return;
-    }
+    if (!confirmer) return;
 
     try {
       setTraitementId(notification.id);
       setErreur("");
-
-      await supprimerNotification(
-        notification.id
-      );
-
-      setNotifications((anciennes) =>
-        anciennes.filter(
-          (element) =>
-            element.id !== notification.id
-        )
-      );
+      await supprimerNotificationStore(notification.id);
     } catch (error) {
-      console.error(
-        "Erreur suppression notification :",
-        error
-      );
-
-      setErreur(
-        "Impossible de supprimer cette notification."
-      );
+      console.error("Erreur suppression notification :", error);
+      setErreur("Impossible de supprimer cette notification.");
     } finally {
       setTraitementId(null);
     }
@@ -354,18 +166,14 @@ useEffect(() => {
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
               Vos notifications
             </h1>
-
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-              Retrouvez les informations importantes
-              concernant votre compte et votre activité
-              sur CodeDoctor.
+              Retrouvez les informations importantes concernant votre compte et votre activité sur CodeDoctor.
             </p>
           </div>
 
           {nombreNonLues > 0 && (
             <Badge variant="warning">
-              {nombreNonLues} non lue
-              {nombreNonLues > 1 ? "s" : ""}
+              {nombreNonLues} non lue{nombreNonLues > 1 ? "s" : ""}
             </Badge>
           )}
         </div>
@@ -376,36 +184,24 @@ useEffect(() => {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() =>
-                setFiltreNonLues(false)
-              }
-              className={`
-                rounded-xl px-4 py-2.5
-                text-sm font-medium transition
-                ${
-                  !filtreNonLues
-                    ? "bg-zinc-950 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }
-              `}
+              onClick={() => setFiltreNonLues(false)}
+              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                !filtreNonLues
+                  ? "bg-zinc-950 text-white"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
             >
               Toutes
             </button>
 
             <button
               type="button"
-              onClick={() =>
-                setFiltreNonLues(true)
-              }
-              className={`
-                rounded-xl px-4 py-2.5
-                text-sm font-medium transition
-                ${
-                  filtreNonLues
-                    ? "bg-zinc-950 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }
-              `}
+              onClick={() => setFiltreNonLues(true)}
+              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                filtreNonLues
+                  ? "bg-zinc-950 text-white"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
             >
               Non lues
             </button>
@@ -413,36 +209,15 @@ useEffect(() => {
 
           <button
             type="button"
-            onClick={() =>
-              void toutMarquerCommeLu()
-            }
-            disabled={
-              nombreNonLues === 0 ||
-              traitementId === "all"
-            }
-            className="
-              inline-flex items-center
-              justify-center gap-2
-              rounded-xl border
-              border-zinc-200
-              bg-white px-4 py-2.5
-              text-sm font-medium
-              text-zinc-700
-              transition
-              hover:bg-zinc-50
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-            "
+            onClick={() => void toutMarquerCommeLu()}
+            disabled={nombreNonLues === 0 || traitementId === "all"}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {traitementId === "all" ? (
-              <Loader2
-                size={16}
-                className="animate-spin"
-              />
+              <Loader2 size={16} className="animate-spin" />
             ) : (
               <CheckCheck size={16} />
             )}
-
             Tout marquer comme lu
           </button>
         </div>
@@ -451,14 +226,8 @@ useEffect(() => {
       {erreur && (
         <Card className="border-red-200 bg-red-50 p-5">
           <div className="flex items-start gap-3">
-            <AlertCircle
-              size={19}
-              className="mt-0.5 shrink-0 text-red-600"
-            />
-
-            <p className="text-sm text-red-700">
-              {erreur}
-            </p>
+            <AlertCircle size={19} className="mt-0.5 shrink-0 text-red-600" />
+            <p className="text-sm text-red-700">{erreur}</p>
           </div>
         </Card>
       )}
@@ -466,11 +235,7 @@ useEffect(() => {
       {chargement ? (
         <Card className="p-12">
           <div className="flex flex-col items-center text-center">
-            <Loader2
-              size={28}
-              className="animate-spin text-zinc-400"
-            />
-
+            <Loader2 size={28} className="animate-spin text-zinc-400" />
             <p className="mt-4 text-sm font-medium text-zinc-700">
               Chargement des notifications...
             </p>
@@ -479,15 +244,10 @@ useEffect(() => {
       ) : notificationsAffichees.length === 0 ? (
         <Card className="p-12">
           <div className="text-center">
-            <Bell
-              size={36}
-              className="mx-auto text-zinc-300"
-            />
-
+            <Bell size={36} className="mx-auto text-zinc-300" />
             <h2 className="mt-4 text-sm font-semibold text-zinc-800">
               Aucune notification
             </h2>
-
             <p className="mt-1 text-xs leading-5 text-zinc-400">
               {filtreNonLues
                 ? "Vous avez lu toutes vos notifications."
@@ -497,162 +257,92 @@ useEffect(() => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {notificationsAffichees.map(
-            (notification) => (
-              <Card
-                key={notification.id}
-                className={`
-                  overflow-hidden transition
-                  ${
-                    !notification.lue
-                      ? "border-zinc-300 bg-white shadow-sm"
-                      : ""
-                  }
-                `}
-              >
-                <div className="p-5 sm:p-6">
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`
-                        flex h-11 w-11
-                        shrink-0 items-center
-                        justify-center rounded-xl
-                        ${
-                          notification.lue
-                            ? "bg-zinc-100 text-zinc-500"
-                            : "bg-zinc-950 text-white"
-                        }
-                      `}
-                    >
-                      <Bell size={18} />
-                    </div>
+          {notificationsAffichees.map((notification) => (
+            <Card
+              key={notification.id}
+              className={`overflow-hidden transition ${
+                !notification.lue ? "border-zinc-300 bg-white shadow-sm" : ""
+              }`}
+            >
+              <div className="p-5 sm:p-6">
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                      notification.lue
+                        ? "bg-zinc-100 text-zinc-500"
+                        : "bg-zinc-950 text-white"
+                    }`}
+                  >
+                    <Bell size={18} />
+                  </div>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Badge
-                              variant={classeType(
-                                notification.type
-                              )}
-                            >
-                              {libelleType(
-                                notification.type
-                              )}
-                            </Badge>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={classeType(notification.type)}>
+                            {libelleType(notification.type)}
+                          </Badge>
 
-                            {!notification.lue && (
-                              <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500">
-                                <span className="h-1.5 w-1.5 rounded-full bg-zinc-900" />
-                                Nouvelle
-                              </span>
-                            )}
-                          </div>
-
-                          <h2 className="mt-3 text-base font-semibold text-zinc-950">
-                            {notification.titre}
-                          </h2>
+                          {!notification.lue && (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500">
+                              <span className="h-1.5 w-1.5 rounded-full bg-zinc-900" />
+                              Nouvelle
+                            </span>
+                          )}
                         </div>
 
-                        <span className="inline-flex shrink-0 items-center gap-1 text-xs text-zinc-400">
-                          <Clock3 size={13} />
-                          {formaterDate(
-                            notification.createdAt
-                          )}
-                        </span>
+                        <h2 className="mt-3 text-base font-semibold text-zinc-950">
+                          {notification.titre}
+                        </h2>
                       </div>
 
-                      <p className="mt-3 text-sm leading-6 text-zinc-600">
-                        {notification.message}
-                      </p>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-zinc-400">
+                        <Clock3 size={13} />
+                        {formaterDate(notification.createdAt)}
+                      </span>
+                    </div>
 
-                      <p className="mt-3 text-xs text-zinc-400">
-                        {iconeNotification(
-                          notification.type
+                    <p className="mt-3 text-sm leading-6 text-zinc-600">
+                      {notification.message}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void marquerCommeLue(notification)}
+                        disabled={traitementId === notification.id}
+                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {traitementId === notification.id ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : notification.lien ? (
+                          <ChevronRight size={15} />
+                        ) : (
+                          <CheckCheck size={15} />
                         )}
-                      </p>
+                        {notification.lien
+                          ? "Ouvrir"
+                          : notification.lue
+                          ? "Déjà lue"
+                          : "Marquer comme lue"}
+                      </button>
 
-                      <div className="mt-5 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void marquerCommeLue(
-                              notification
-                            )
-                          }
-                          disabled={
-                            traitementId ===
-                            notification.id
-                          }
-                          className="
-                            inline-flex items-center
-                            gap-2 rounded-xl
-                            bg-zinc-950
-                            px-4 py-2.5
-                            text-sm font-medium
-                            text-white
-                            transition
-                            hover:bg-zinc-800
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                          "
-                        >
-                          {traitementId ===
-                          notification.id ? (
-                            <Loader2
-                              size={15}
-                              className="animate-spin"
-                            />
-                          ) : notification.lien ? (
-                            <ChevronRight size={15} />
-                          ) : (
-                            <CheckCheck size={15} />
-                          )}
-
-                          {notification.lien
-                            ? "Ouvrir"
-                            : notification.lue
-                            ? "Déjà lue"
-                            : "Marquer comme lue"}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void supprimer(
-                              notification
-                            )
-                          }
-                          disabled={
-                            traitementId ===
-                            notification.id
-                          }
-                          className="
-                            inline-flex items-center
-                            gap-2 rounded-xl
-                            border border-zinc-200
-                            bg-white
-                            px-4 py-2.5
-                            text-sm font-medium
-                            text-zinc-600
-                            transition
-                            hover:border-red-200
-                            hover:bg-red-50
-                            hover:text-red-600
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                          "
-                        >
-                          <Trash2 size={15} />
-                          Supprimer
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void supprimer(notification)}
+                        disabled={traitementId === notification.id}
+                        className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 size={15} />
+                        Supprimer
+                      </button>
                     </div>
                   </div>
                 </div>
-              </Card>
-            )
-          )}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
     </div>

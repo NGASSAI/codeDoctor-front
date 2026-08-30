@@ -5,7 +5,7 @@ import type {
 } from "react";
 
 interface CardProps
-  extends HTMLAttributes<HTMLDivElement> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'onAnimationStart'> {
   children: ReactNode;
 }
 
@@ -21,6 +21,8 @@ export default function Card({
         border border-blue-200/80
         bg-white/80 backdrop-blur-sm
         shadow-sm
+        hover:shadow-md
+        transition-shadow duration-300
         ${className}
       `}
       {...props}

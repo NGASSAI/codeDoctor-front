@@ -11,6 +11,11 @@ import {
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEO from "../../components/seo/SEO";
+import { useAuthStore } from "../../stores/auth.store";
+
+export default function AccueilPage() {
+  const utilisateur = useAuthStore((state) => state.utilisateur);
+
 const fonctionnalites = [
   {
     icon: Sparkles,
@@ -59,7 +64,6 @@ const etapes = [
   },
 ];
 
-export default function AccueilPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50 text-zinc-950">
       <SEO
@@ -133,12 +137,23 @@ export default function AccueilPage() {
               </div>
             </Link>
 
-            <Link
-              to="/connexion"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-white/80 backdrop-blur-sm px-4 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
-            >
-              Se connecter
-            </Link>
+            {!utilisateur && (
+              <Link
+                to="/connexion"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-white/80 backdrop-blur-sm px-4 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+              >
+                Se connecter
+              </Link>
+            )}
+
+            {utilisateur && (
+              <Link
+                to="/dashboard"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-white/80 backdrop-blur-sm px-4 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+              >
+                Tableau de bord
+              </Link>
+            )}
           </motion.header>
 
           {/* Hero content */}

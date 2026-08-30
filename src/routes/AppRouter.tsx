@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 import PublicLayout from "../layouts/PublicLayout";
 import AuthLayout from "../layouts/AuthLayout";
@@ -11,40 +12,44 @@ import UserLayout from "../layouts/UserLayout";
 import AdminLayout from "../layouts/AdminLayout";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import PageTransition from "../components/ui/PageTransition";
+import { TableSkeleton } from "../components/ui/TableSkeleton";
 
 /* Public */
-import AccueilPage from "../pages/public/AccueilPage";
-import ExperiencesPage from "../pages/public/ExperiencesPage";
-import ExperienceDetailPage from "../pages/public/ExperienceDetailPage";
+const AccueilPage = lazy(() => import("../pages/public/AccueilPage"));
+const ExperiencesPage = lazy(() => import("../pages/public/ExperiencesPage"));
+const ExperienceDetailPage = lazy(() => import("../pages/public/ExperienceDetailPage"));
 
 /* Auth */
-import ConnexionPage from "../pages/auth/ConnexionPage";
-import InscriptionPage from "../pages/auth/InscriptionPage";
-import MotDePasseOubliePage from "../pages/auth/MotDePasseOubliePage";
-import ReinitialiserMotDePassePage from "../pages/auth/ReinitialiserMotDePassePage";
-import VerificationEmailPage from "../pages/auth/VerificationEmailPage";
+const ConnexionPage = lazy(() => import("../pages/auth/ConnexionPage"));
+const InscriptionPage = lazy(() => import("../pages/auth/InscriptionPage"));
+const MotDePasseOubliePage = lazy(() => import("../pages/auth/MotDePasseOubliePage"));
+const ReinitialiserMotDePassePage = lazy(() => import("../pages/auth/ReinitialiserMotDePassePage"));
+const VerificationEmailPage = lazy(() => import("../pages/auth/VerificationEmailPage"));
 
 /* User */
-import DashboardPage from "../pages/user/DashboardPage";
-import ExercicesPage from "../pages/user/ExercicesPage";
-import ExerciceDetailPage from "../pages/user/ExerciceDetailPage";
-import DiagnosticPage from "../pages/user/DiagnosticPage";
-import HistoriquePage from "../pages/user/HistoriquePage";
-import HistoriqueDetailPage from "../pages/user/HistoriqueDetailPage";
-import PremiumPage from "../pages/user/PremiumPage";
-import NotificationsPage from "../pages/user/NotificationsPage";
-import ProfilPage from "../pages/user/ProfilPage";
-import ParametresPage from "../pages/user/ParametresPage";
-import DiscussionsPage from "../pages/user/DiscussionsPage";
-import ConversationPage from "../pages/user/ConversationPage";
+const DashboardPage = lazy(() => import("../pages/user/DashboardPage"));
+const ExercicesPage = lazy(() => import("../pages/user/ExercicesPage"));
+const ExerciceDetailPage = lazy(() => import("../pages/user/ExerciceDetailPage"));
+const DiagnosticPage = lazy(() => import("../pages/user/DiagnosticPage"));
+const HistoriquePage = lazy(() => import("../pages/user/HistoriquePage"));
+const HistoriqueDetailPage = lazy(() => import("../pages/user/HistoriqueDetailPage"));
+const PremiumPage = lazy(() => import("../pages/user/PremiumPage"));
+const NotificationsPage = lazy(() => import("../pages/user/NotificationsPage"));
+const ProfilPage = lazy(() => import("../pages/user/ProfilPage"));
+const ParametresPage = lazy(() => import("../pages/user/ParametresPage"));
+const DiscussionsPage = lazy(() => import("../pages/user/DiscussionsPage"));
+const ConversationPage = lazy(() => import("../pages/user/ConversationPage"));
 
 /* Admin */
-import NotificationsAdminPage from "../pages/admin/NotificationsAdminPage";
-import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
-import UtilisateursAdminPage from "../pages/admin/UtilisateursAdminPage";
-import ExperiencesAdminPage from "../pages/admin/ExperiencesAdminPage";
-import PaiementsAdminPage from "../pages/admin/PaiementsAdminPage";
-import SignalementsAdminPage from "../pages/admin/SignalementsAdminPage";
+const NotificationsAdminPage = lazy(() => import("../pages/admin/NotificationsAdminPage"));
+const AdminDashboardPage = lazy(() => import("../pages/admin/AdminDashboardPage"));
+const UtilisateursAdminPage = lazy(() => import("../pages/admin/UtilisateursAdminPage"));
+const ExperiencesAdminPage = lazy(() => import("../pages/admin/ExperiencesAdminPage"));
+const PaiementsAdminPage = lazy(() => import("../pages/admin/PaiementsAdminPage"));
+const SignalementsAdminPage = lazy(() => import("../pages/admin/SignalementsAdminPage"));
+const ProfilAdminPage = lazy(() => import("../pages/admin/ProfilAdminPage"));
+const ParametresAdminPage = lazy(() => import("../pages/admin/ParametresAdminPage"));
 
 export default function AppRouter() {
   return (
@@ -57,17 +62,29 @@ export default function AppRouter() {
         <Route element={<PublicLayout />}>
           <Route
             path="/"
-            element={<AccueilPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><AccueilPage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/experiences"
-            element={<ExperiencesPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><ExperiencesPage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/experiences/:id"
-            element={<ExperienceDetailPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><ExperienceDetailPage /></PageTransition>
+              </Suspense>
+            }
           />
         </Route>
 
@@ -78,27 +95,47 @@ export default function AppRouter() {
         <Route element={<AuthLayout />}>
           <Route
             path="/connexion"
-            element={<ConnexionPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><ConnexionPage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/inscription"
-            element={<InscriptionPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><InscriptionPage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/mot-de-passe-oublie"
-            element={<MotDePasseOubliePage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><MotDePasseOubliePage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/reinitialiser-mot-de-passe"
-            element={<ReinitialiserMotDePassePage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><ReinitialiserMotDePassePage /></PageTransition>
+              </Suspense>
+            }
           />
 
           <Route
             path="/verification-email"
-            element={<VerificationEmailPage />}
+            element={
+              <Suspense fallback={<TableSkeleton />}>
+                <PageTransition><VerificationEmailPage /></PageTransition>
+              </Suspense>
+            }
           />
         </Route>
 
@@ -110,62 +147,110 @@ export default function AppRouter() {
           <Route element={<UserLayout />}>
             <Route
               path="/dashboard"
-              element={<DashboardPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><DashboardPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/diagnostic"
-              element={<DiagnosticPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><DiagnosticPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/exercices"
-              element={<ExercicesPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><ExercicesPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/exercices/:id"
-              element={<ExerciceDetailPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><ExerciceDetailPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/historique"
-              element={<HistoriquePage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><HistoriquePage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/historique/:id"
-              element={<HistoriqueDetailPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><HistoriqueDetailPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/historique/conversations/:id"
-              element={<ConversationPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><ConversationPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/discussions"
-              element={<DiscussionsPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><DiscussionsPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/premium"
-              element={<PremiumPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><PremiumPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/notifications"
-              element={<NotificationsPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><NotificationsPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/profil"
-              element={<ProfilPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><ProfilPage /></PageTransition>
+                </Suspense>
+              }
             />
 
             <Route
               path="/parametres"
-              element={<ParametresPage />}
+              element={
+                <Suspense fallback={<TableSkeleton />}>
+                  <PageTransition><ParametresPage /></PageTransition>
+                </Suspense>
+              }
             />
           </Route>
         </Route>
@@ -173,44 +258,95 @@ export default function AppRouter() {
         {/* =====================================================
             ESPACE ADMINISTRATION
         ====================================================== */}
+{/* =====================================================
+    ESPACE ADMINISTRATION
+====================================================== */}
+<Route element={<ProtectedRoute adminOnly />}>
   <Route element={<AdminLayout />}>
 
-      <Route
-        path="/admin"
-        element={<AdminDashboardPage />}
-      />
-
-      <Route
-        path="/admin/dashboard"
-        element={<AdminDashboardPage />}
-      />
-
-      <Route
-        path="/admin/notifications"
-        element={<NotificationsAdminPage />}
-      />
-
-  <Route
-    path="/admin/utilisateurs"
-    element={<UtilisateursAdminPage />}
-  />
-
-  <Route
-    path="/admin/experiences"
-    element={<ExperiencesAdminPage />}
-  />
-
-  <Route
-    path="/admin/paiements"
-    element={<PaiementsAdminPage />}
-  />
-   <Route
-      path="/admin/signalements"
-      element={<SignalementsAdminPage />}
+    <Route
+      path="/admin"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><AdminDashboardPage /></PageTransition>
+        </Suspense>
+      }
     />
 
-</Route>  
+    <Route
+      path="/admin/dashboard"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><AdminDashboardPage /></PageTransition>
+        </Suspense>
+      }
+    />
 
+    <Route
+      path="/admin/notifications"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><NotificationsAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/utilisateurs"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><UtilisateursAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/experiences"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><ExperiencesAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/paiements"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><PaiementsAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/signalements"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><SignalementsAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/profil"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><ProfilAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+    <Route
+      path="/admin/parametres"
+      element={
+        <Suspense fallback={<TableSkeleton />}>
+          <PageTransition><ParametresAdminPage /></PageTransition>
+        </Suspense>
+      }
+    />
+
+  </Route>
+</Route>
         
         
 

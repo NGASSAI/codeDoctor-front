@@ -2,6 +2,7 @@
 import { api } from "../lib/api";
 
 import type {
+  NotificationsAdminResponse,
   DashboardAdminResponse,
   ExperiencesAdminResponse,
   ModifierPaiementAdminResponse,
@@ -14,6 +15,23 @@ import type {
   UtilisateursAdminResponse,
 } from "../types/admin";
 
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+export async function obtenirNotificationsAdmin(
+  page = 1,
+  limite = 20
+): Promise<NotificationsAdminResponse> {
+  const response = await api.get<NotificationsAdminResponse>(
+    "/admin/notifications",
+    {
+      params: { page, limite },
+    }
+  );
+
+  return response.data;
+}
 /* =========================================================
    DASHBOARD
 ========================================================= */
@@ -97,6 +115,20 @@ export async function modifierStatutExperienceAdmin(
   return response.data;
 }
 
+/**
+ * Supprimer définitivement une expérience.
+ */
+export async function supprimerExperienceAdmin(
+  id: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.delete<{ success: boolean }>(
+      `/admin/experiences/${id}`
+    );
+
+  return response.data;
+}
+
 
 /* =========================================================
    SIGNALEMENTS
@@ -140,6 +172,20 @@ export async function modifierStatutSignalementAdmin(
       {
         statut,
       }
+    );
+
+  return response.data;
+}
+
+/**
+ * Supprimer définitivement un signalement.
+ */
+export async function supprimerSignalementAdmin(
+  id: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.delete<{ success: boolean }>(
+      `/admin/signalements/${id}`
     );
 
   return response.data;
@@ -198,6 +244,86 @@ export async function rejeterPaiementAdmin(
   const response =
     await api.patch<ModifierPaiementAdminResponse>(
       `/admin/paiements/${paiementId}/rejeter`
+    );
+
+  return response.data;
+}
+
+/**
+ * Supprimer définitivement une demande de paiement.
+ */
+export async function supprimerPaiementAdmin(
+  paiementId: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.delete<{ success: boolean }>(
+      `/admin/paiements/${paiementId}`
+    );
+
+  return response.data;
+}
+
+
+/* =========================================================
+   GESTION UTILISATEURS
+========================================================= */
+
+/**
+ * Bloquer un utilisateur.
+ */
+export async function bloquerUtilisateurAdmin(
+  utilisateurId: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.post<{ success: boolean }>(
+      `/admin/utilisateurs/${utilisateurId}/bloquer`
+    );
+
+  return response.data;
+}
+
+
+/**
+ * Débloquer un utilisateur.
+ */
+export async function debloquerUtilisateurAdmin(
+  utilisateurId: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.delete<{ success: boolean }>(
+      `/admin/utilisateurs/${utilisateurId}/bloquer`
+    );
+
+  return response.data;
+}
+
+
+/**
+ * Supprimer un utilisateur.
+ */
+export async function supprimerUtilisateurAdmin(
+  utilisateurId: string
+): Promise<{ success: boolean }> {
+  const response =
+    await api.delete<{ success: boolean }>(
+      `/admin/utilisateurs/${utilisateurId}`
+    );
+
+  return response.data;
+}
+
+
+/**
+ * Modifier le rôle d'un utilisateur.
+ */
+export async function modifierRoleUtilisateurAdmin(
+  utilisateurId: string,
+  role: "USER" | "ADMIN"
+): Promise<{ success: boolean }> {
+  const response =
+    await api.patch<{ success: boolean }>(
+      `/admin/utilisateurs/${utilisateurId}/role`,
+      { role }
     );
 
   return response.data;

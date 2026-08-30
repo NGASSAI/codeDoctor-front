@@ -1,6 +1,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -223,6 +224,18 @@ export default function MotDePasseOubliePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+      {/* Bouton de retour */}
+      <motion.button
+        type="button"
+        onClick={() => navigate("/")}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-xl border border-blue-200 bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 lg:left-8 lg:top-8"
+      >
+        <ArrowLeft size={16} />
+        <span>Retour</span>
+      </motion.button>
+
       <div className="flex min-h-screen items-center justify-center px-5 py-12 sm:px-8">
         <div className="w-full max-w-md">
           {/* Logo */}

@@ -67,6 +67,16 @@ export default function Sidebar({
           icon: ShieldCheck,
           path: "/admin/signalements",
         },
+        {
+          label: "Profil",
+          icon: UserRound,
+          path: "/admin/profil",
+        },
+        {
+          label: "Paramètres",
+          icon: Settings,
+          path: "/admin/parametres",
+        },
       ]
     : [
         {
@@ -130,6 +140,8 @@ export default function Sidebar({
     return (
       path === "/admin" ||
       path === "/admin/dashboard" ||
+      path === "/admin/profil" ||
+      path === "/admin/parametres" ||
       path === "/dashboard" ||
       path === "/exercices" ||
       path === "/historique" ||
@@ -192,7 +204,7 @@ export default function Sidebar({
               items-center
               justify-center
               rounded-2xl
-              bg-gradient-to-br
+              bg-linear-to-br
               from-blue-600
               to-cyan-500
               text-sm
@@ -267,7 +279,7 @@ export default function Sidebar({
                     ${
                       isActive
                         ? `
-                          bg-gradient-to-r
+                        bg-linear-to-r
                           from-blue-600
                           to-cyan-500
                           text-white
@@ -426,7 +438,7 @@ export default function Sidebar({
           shadow-blue-900/5
           lg:flex
           lg:sticky
-          lg:top-[68px]
+        lg:top-17
         "
       >
         {contenuSidebar}

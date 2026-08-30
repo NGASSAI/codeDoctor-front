@@ -253,7 +253,7 @@ export default function ExerciceDetailPage() {
           <button
             type="button"
             onClick={() =>
-              navigate("/dashboard/exercices")
+              navigate("/exercices")
             }
             className="
               mt-5 inline-flex items-center gap-2
@@ -278,7 +278,7 @@ export default function ExerciceDetailPage() {
       <button
         type="button"
         onClick={() =>
-          navigate("/dashboard/exercices")
+          navigate("/exercices")
         }
         className="
           inline-flex items-center gap-2

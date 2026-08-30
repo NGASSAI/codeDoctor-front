@@ -38,6 +38,13 @@ const CATEGORIES = [
   { code: "HTML_CSS", label: "HTML / CSS" },
 ] as const;
 
+function getSalutation(): string {
+  const heure = new Date().getHours();
+  if (heure >= 5 && heure < 12) return "Bonjour";
+  if (heure >= 12 && heure < 18) return "Bon après-midi";
+  return "Bonsoir";
+}
+
 export default function DashboardPage() {
   const utilisateur = useAuthStore(
     (state) => state.utilisateur
@@ -166,7 +173,7 @@ export default function DashboardPage() {
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Bonjour, {nomUtilisateur} 👋
+              {getSalutation()}, {nomUtilisateur} 👋
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 sm:text-base">
@@ -598,7 +605,7 @@ export default function DashboardPage() {
 
             <Link
               to="/exercices"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-blue-900 transition hover:bg-blue-50 shadow-lg"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-cyan-500/30"
             >
               <BookOpen size={16} />
               Continuer

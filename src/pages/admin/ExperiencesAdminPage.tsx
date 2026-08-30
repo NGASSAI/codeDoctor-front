@@ -690,46 +690,67 @@ export default function ExperiencesAdminPage() {
 
                         </div>
 
-                        <select
-                          value={
-                            experience.statut
-                          }
-                          disabled={
-                            experienceEnModification ===
-                            experience.id
-                          }
-                          onChange={(event) =>
-                            void changerStatut(
-                              experience,
-                              event.target
-                                .value as StatutExperienceAdmin
-                            )
-                          }
-                          className="
-                            max-w-170px
-                            rounded-lg
-                            border border-zinc-200
-                            bg-white
-                            px-3 py-2
-                            text-xs font-medium
-                            text-zinc-700
-                            outline-none
-                            focus:border-zinc-900
-                            disabled:opacity-50
-                          "
-                        >
-                          <option value="PUBLISHED">
-                            Publiée
-                          </option>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={
+                              experience.statut
+                            }
+                            disabled={
+                              experienceEnModification ===
+                              experience.id
+                            }
+                            onChange={(event) =>
+                              void changerStatut(
+                                experience,
+                                event.target
+                                  .value as StatutExperienceAdmin
+                              )
+                            }
+                            className="
+                              max-w-170px
+                              rounded-lg
+                              border border-zinc-200
+                              bg-white
+                              px-3 py-2
+                              text-xs font-medium
+                              text-zinc-700
+                              outline-none
+                              focus:border-zinc-900
+                              disabled:opacity-50
+                            "
+                          >
+                            <option value="PUBLISHED">
+                              Publiée
+                            </option>
 
-                          <option value="HIDDEN">
-                            Masquée
-                          </option>
+                            <option value="HIDDEN">
+                              Masquée
+                            </option>
 
-                          <option value="DELETED">
-                            Supprimée
-                          </option>
-                        </select>
+                            <option value="DELETED">
+                              Supprimée
+                            </option>
+                          </select>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void changerStatut(
+                                experience,
+                                "DELETED"
+                              )
+                            }
+                            disabled={
+                              experienceEnModification ===
+                                experience.id ||
+                              experience.statut === "DELETED"
+                            }
+                            className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            title="Supprimer définitivement"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
 
                       </div>
 
@@ -1004,6 +1025,28 @@ export default function ExperiencesAdminPage() {
                             </option>
 
                           </select>
+
+                          <div className="mt-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void changerStatut(
+                                  experience,
+                                  "DELETED"
+                                )
+                              }
+                              disabled={
+                                experienceEnModification ===
+                                  experience.id ||
+                                experience.statut === "DELETED"
+                              }
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-medium text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              title="Supprimer définitivement"
+                            >
+                              <Trash2 size={12} />
+                              Supprimer
+                            </button>
+                          </div>
 
                           {experience.moderator && (
                             <p className="mt-1.5 max-w-180px truncate text-[10px] text-zinc-400">

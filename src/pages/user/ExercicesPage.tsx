@@ -388,13 +388,13 @@ function ExerciceCard({
           items-center
           justify-between
           rounded-xl
-          bg-zinc-900
+          bg-gradient-to-r from-blue-600 to-cyan-600
           px-4 py-3
           text-sm
           font-medium
           text-white
           transition
-          hover:bg-zinc-800
+          hover:shadow-lg hover:shadow-blue-500/30
         "
       >
         <span>Commencer l'exercice</span>

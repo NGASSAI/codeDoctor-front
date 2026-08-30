@@ -5,13 +5,16 @@ import {
   Loader2,
   Mail,
   MessageCircle,
+  Send,
   ShieldCheck,
   XCircle,
+  X,
 } from "lucide-react";
 import {
   useEffect,
   useState,
 } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -26,6 +29,8 @@ import {
   obtenirMesPaiements,
   type Paiement,
 } from "../../services/paiement.service";
+
+import { creerNotificationAdmin } from "../../services/notification.service";
 
 const PRIX_PREMIUM = 2500;
 
@@ -104,6 +109,14 @@ export default function PremiumPage() {
 
   const [message, setMessage] = useState("");
 
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  const [contactMethod, setContactMethod] = useState<"whatsapp" | "message" | null>(null);
+
+  const [customMessage, setCustomMessage] = useState("");
+
+  const [sendingMessage, setSendingMessage] = useState(false);
+
   useEffect(() => {
     let actif = true;
 
@@ -175,15 +188,7 @@ export default function PremiumPage() {
 
       setPaiements(nouveauxPaiements);
 
-      setMessage(
-        "Votre demande a été enregistrée. Poursuivez la procédure via WhatsApp."
-      );
-
-      window.open(
-        WHATSAPP_URL,
-        "_blank",
-        "noopener,noreferrer"
-      );
+      setShowContactModal(true);
     } catch (error) {
       console.error(
         "Erreur demande Premium :",
@@ -196,6 +201,49 @@ export default function PremiumPage() {
     } finally {
       setDemandeEnCours(false);
     }
+  }
+
+  async function envoyerMessageAdmin() {
+    if (!customMessage.trim()) {
+      setErreur("Veuillez saisir un message.");
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      setErreur("");
+
+      // Créer une notification pour l'admin
+      await creerNotificationAdmin(
+        "Nouveau message Premium",
+        customMessage,
+        "INFO"
+      );
+
+      setMessage("Votre message a été envoyé à l'administration.");
+      setCustomMessage("");
+      setShowContactModal(false);
+    } catch (error) {
+      console.error(
+        "Erreur envoi message :",
+        error
+      );
+
+      setErreur(
+        "Impossible d'envoyer votre message."
+      );
+    } finally {
+      setSendingMessage(false);
+    }
+  }
+
+  function ouvrirWhatsApp() {
+    window.open(
+      WHATSAPP_URL,
+      "_blank",
+      "noopener,noreferrer"
+    );
+    setShowContactModal(false);
   }
 
   return (
@@ -488,6 +536,136 @@ export default function PremiumPage() {
           </section>
         </>
       )}
+
+      {/* Modal de choix de contact */}
+      <AnimatePresence>
+        {showContactModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-blue-950/30 backdrop-blur-sm"
+              onClick={() => setShowContactModal(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <Card className="w-full max-w-md bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-zinc-950">
+                    Choisir le mode de contact
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowContactModal(false)}
+                    className="rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+                    aria-label="Fermer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <p className="mb-6 text-sm text-zinc-600">
+                  Votre demande a été enregistrée. Choisissez comment vous souhaitez contacter l'administration pour finaliser le paiement.
+                </p>
+
+                {!contactMethod ? (
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod("whatsapp")}
+                      className="flex w-full items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-left transition hover:border-green-300 hover:bg-green-100"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white">
+                        <MessageCircle size={18} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-green-900">WhatsApp</p>
+                        <p className="text-xs text-green-700">Contact direct via WhatsApp</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod("message")}
+                      className="flex w-full items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-300 hover:bg-blue-100"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white">
+                        <Send size={18} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900">Envoyer un message</p>
+                        <p className="text-xs text-blue-700">Écrire un message à l'admin</p>
+                      </div>
+                    </button>
+                  </div>
+                ) : contactMethod === "whatsapp" ? (
+                  <div className="space-y-4">
+                    <div className="rounded-xl bg-green-50 p-4">
+                      <p className="text-sm font-medium text-green-900">
+                        Cliquez sur le bouton ci-dessous pour ouvrir WhatsApp et finaliser votre paiement.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={ouvrirWhatsApp}
+                      className="w-full rounded-xl bg-green-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-600"
+                    >
+                      Ouvrir WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod(null)}
+                      className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      Retour
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <textarea
+                      value={customMessage}
+                      onChange={(e) => setCustomMessage(e.target.value)}
+                      placeholder="Décrivez votre demande ou votre question..."
+                      rows={4}
+                      className="w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={envoyerMessageAdmin}
+                      disabled={sendingMessage}
+                      className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {sendingMessage ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 size={16} className="animate-spin" />
+                          Envoi...
+                        </span>
+                      ) : (
+                        "Envoyer le message"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod(null)}
+                      className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      Retour
+                    </button>
+                  </div>
+                )}
+              </Card>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
