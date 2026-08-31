@@ -1,10 +1,5 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import PublicLayout from "../layouts/PublicLayout";
 import AuthLayout from "../layouts/AuthLayout";
@@ -50,6 +45,18 @@ const PaiementsAdminPage = lazy(() => import("../pages/admin/PaiementsAdminPage"
 const SignalementsAdminPage = lazy(() => import("../pages/admin/SignalementsAdminPage"));
 const ProfilAdminPage = lazy(() => import("../pages/admin/ProfilAdminPage"));
 const ParametresAdminPage = lazy(() => import("../pages/admin/ParametresAdminPage"));
+const ExercicesAdminPage = lazy(() => import("../pages/admin/ExercicesAdminPage"));
+
+/**
+ * Encapsule un composant dans un Suspense fallback et applique une transition de page.
+ */
+const renderLazyPage = (Component: React.ComponentType) => (
+  <Suspense fallback={<TableSkeleton />}>
+    <PageTransition>
+      <Component />
+    </PageTransition>
+  </Suspense>
+);
 
 export default function AppRouter() {
   return (
@@ -58,311 +65,65 @@ export default function AppRouter() {
         {/* =====================================================
             ESPACE PUBLIC
         ====================================================== */}
-
         <Route element={<PublicLayout />}>
-          <Route
-            path="/"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><AccueilPage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/experiences"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><ExperiencesPage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/experiences/:id"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><ExperienceDetailPage /></PageTransition>
-              </Suspense>
-            }
-          />
+          <Route path="/" element={renderLazyPage(AccueilPage)} />
+          <Route path="/experiences" element={renderLazyPage(ExperiencesPage)} />
+          <Route path="/experiences/:id" element={renderLazyPage(ExperienceDetailPage)} />
         </Route>
 
         {/* =====================================================
             AUTHENTIFICATION
         ====================================================== */}
-
         <Route element={<AuthLayout />}>
-          <Route
-            path="/connexion"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><ConnexionPage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/inscription"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><InscriptionPage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/mot-de-passe-oublie"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><MotDePasseOubliePage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/reinitialiser-mot-de-passe"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><ReinitialiserMotDePassePage /></PageTransition>
-              </Suspense>
-            }
-          />
-
-          <Route
-            path="/verification-email"
-            element={
-              <Suspense fallback={<TableSkeleton />}>
-                <PageTransition><VerificationEmailPage /></PageTransition>
-              </Suspense>
-            }
-          />
+          <Route path="/connexion" element={renderLazyPage(ConnexionPage)} />
+          <Route path="/inscription" element={renderLazyPage(InscriptionPage)} />
+          <Route path="/mot-de-passe-oublie" element={renderLazyPage(MotDePasseOubliePage)} />
+          <Route path="/reinitialiser-mot-de-passe" element={renderLazyPage(ReinitialiserMotDePassePage)} />
+          <Route path="/verification-email" element={renderLazyPage(VerificationEmailPage)} />
         </Route>
 
         {/* =====================================================
             ESPACE UTILISATEUR
         ====================================================== */}
-
         <Route element={<ProtectedRoute />}>
           <Route element={<UserLayout />}>
-            <Route
-              path="/dashboard"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><DashboardPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/diagnostic"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><DiagnosticPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/exercices"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><ExercicesPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/exercices/:id"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><ExerciceDetailPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/historique"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><HistoriquePage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/historique/:id"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><HistoriqueDetailPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/historique/conversations/:id"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><ConversationPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/discussions"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><DiscussionsPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/premium"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><PremiumPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/notifications"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><NotificationsPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/profil"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><ProfilPage /></PageTransition>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/parametres"
-              element={
-                <Suspense fallback={<TableSkeleton />}>
-                  <PageTransition><ParametresPage /></PageTransition>
-                </Suspense>
-              }
-            />
+            <Route path="/dashboard" element={renderLazyPage(DashboardPage)} />
+            <Route path="/diagnostic" element={renderLazyPage(DiagnosticPage)} />
+            <Route path="/exercices" element={renderLazyPage(ExercicesPage)} />
+            <Route path="/exercices/:id" element={renderLazyPage(ExerciceDetailPage)} />
+            <Route path="/historique" element={renderLazyPage(HistoriquePage)} />
+            <Route path="/historique/:id" element={renderLazyPage(HistoriqueDetailPage)} />
+            <Route path="/historique/conversations/:id" element={renderLazyPage(ConversationPage)} />
+            <Route path="/discussions" element={renderLazyPage(DiscussionsPage)} />
+            <Route path="/premium" element={renderLazyPage(PremiumPage)} />
+            <Route path="/notifications" element={renderLazyPage(NotificationsPage)} />
+            <Route path="/profil" element={renderLazyPage(ProfilPage)} />
+            <Route path="/parametres" element={renderLazyPage(ParametresPage)} />
           </Route>
         </Route>
 
         {/* =====================================================
             ESPACE ADMINISTRATION
         ====================================================== */}
-{/* =====================================================
-    ESPACE ADMINISTRATION
-====================================================== */}
-<Route element={<ProtectedRoute adminOnly />}>
-  <Route element={<AdminLayout />}>
-
-    <Route
-      path="/admin"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><AdminDashboardPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/dashboard"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><AdminDashboardPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/notifications"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><NotificationsAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/utilisateurs"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><UtilisateursAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/experiences"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><ExperiencesAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/paiements"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><PaiementsAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/signalements"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><SignalementsAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/profil"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><ProfilAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-    <Route
-      path="/admin/parametres"
-      element={
-        <Suspense fallback={<TableSkeleton />}>
-          <PageTransition><ParametresAdminPage /></PageTransition>
-        </Suspense>
-      }
-    />
-
-  </Route>
-</Route>
-        
-        
+        <Route element={<ProtectedRoute adminOnly />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={renderLazyPage(AdminDashboardPage)} />
+            <Route path="/admin/dashboard" element={renderLazyPage(AdminDashboardPage)} />
+            <Route path="/admin/exercices" element={renderLazyPage(ExercicesAdminPage)} />
+            <Route path="/admin/notifications" element={renderLazyPage(NotificationsAdminPage)} />
+            <Route path="/admin/utilisateurs" element={renderLazyPage(UtilisateursAdminPage)} />
+            <Route path="/admin/experiences" element={renderLazyPage(ExperiencesAdminPage)} />
+            <Route path="/admin/paiements" element={renderLazyPage(PaiementsAdminPage)} />
+            <Route path="/admin/signalements" element={renderLazyPage(SignalementsAdminPage)} />
+            <Route path="/admin/profil" element={renderLazyPage(ProfilAdminPage)} />
+            <Route path="/admin/parametres" element={renderLazyPage(ParametresAdminPage)} />
+          </Route>
+        </Route>
 
         {/* =====================================================
             ROUTE INCONNUE
         ====================================================== */}
-
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

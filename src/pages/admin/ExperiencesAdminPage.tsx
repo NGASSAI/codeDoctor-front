@@ -11,14 +11,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Eye,
   EyeOff,
   Loader2,
   MessageSquare,
+  Pencil,
+  Plus,
   RefreshCw,
-  ShieldAlert,
   Trash2,
   UserRound,
+  X,
   XCircle,
 } from "lucide-react";
 
@@ -26,6 +27,8 @@ import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 
 import {
+  creerExperienceAdmin,
+  modifierExperienceAdmin,
   modifierStatutExperienceAdmin,
   obtenirExperiencesAdmin,
   supprimerExperienceAdmin,
@@ -35,6 +38,20 @@ import type {
   ExperienceAdmin,
   StatutExperienceAdmin,
 } from "../../types/admin";
+
+interface FormulaireExperience {
+  titre: string;
+  categorie: string;
+  probleme: string;
+  solution: string;
+}
+
+const FORMULAIRE_VIDE: FormulaireExperience = {
+  titre: "",
+  categorie: "",
+  probleme: "",
+  solution: "",
+};
 
 export default function ExperiencesAdminPage() {
   const [experiences, setExperiences] = useState<ExperienceAdmin[]>([]);
@@ -46,12 +63,20 @@ export default function ExperiencesAdminPage() {
   const [pages, setPages] = useState(0);
 
   const [chargement, setChargement] = useState(true);
+  const [actionEnCours, setActionEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
 
   const [experienceEnModification, setExperienceEnModification] =
     useState<string | null>(null);
 
   const [recherche, setRecherche] = useState("");
+
+  // Modales
+  const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false);
+  const [experienceEditee, setExperienceEditee] =
+    useState<ExperienceAdmin | null>(null);
+
+  const [formulaire, setFormulaire] = useState<FormulaireExperience>(FORMULAIRE_VIDE);
 
   const chargerExperiences = useCallback(
     async (pageDemandee: number) => {
@@ -75,21 +100,21 @@ export default function ExperiencesAdminPage() {
     [limite]
   );
 
-useEffect(() => {
-  let estMonte = true;
+  useEffect(() => {
+    let estMonte = true;
 
-  const ExecuterChargement = async () => {
-    if (estMonte) {
-      await chargerExperiences(page);
-    }
-  };
+    const ExecuterChargement = async () => {
+      if (estMonte) {
+        await chargerExperiences(page);
+      }
+    };
 
-  void ExecuterChargement();
+    void ExecuterChargement();
 
-  return () => {
-    estMonte = false;
-  };
-}, [chargerExperiences, page]);
+    return () => {
+      estMonte = false;
+    };
+  }, [chargerExperiences, page]);
 
   const experiencesFiltrees = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
@@ -109,13 +134,77 @@ useEffect(() => {
     });
   }, [experiences, recherche]);
 
+  // --- ACTIONS CRUD ---
+
+  async function gererSoumissionAjout(e: React.FormEvent) {
+    e.preventDefault();
+    if (!formulaire.titre || !formulaire.categorie || !formulaire.probleme) {
+      setErreur("Veuillez remplir les champs obligatoires (Titre, Catégorie, Problème).");
+      return;
+    }
+
+    try {
+      setActionEnCours(true);
+      setErreur("");
+
+      const nouvelleExp = await creerExperienceAdmin(formulaire);
+
+      setExperiences((anciennes) => [nouvelleExp, ...anciennes]);
+      setTotal((ancien) => ancien + 1);
+      setModalAjoutOuverte(false);
+      setFormulaire(FORMULAIRE_VIDE);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'expérience :", error);
+      setErreur("Impossible de créer l'expérience.");
+    } finally {
+      setActionEnCours(false);
+    }
+  }
+
+  function ouvrirEdition(exp: ExperienceAdmin) {
+    setExperienceEditee(exp);
+    setFormulaire({
+      titre: exp.titre,
+      categorie: exp.categorie,
+      probleme: exp.probleme,
+      solution: (exp as unknown as { solution?: string }).solution || "",
+    });
+  }
+
+  async function gererSoumissionModification(e: React.FormEvent) {
+    e.preventDefault();
+    if (!experienceEditee) return;
+
+    try {
+      setActionEnCours(true);
+      setErreur("");
+
+      const expMiseAJour = await modifierExperienceAdmin(
+        experienceEditee.id,
+        formulaire
+      );
+
+      setExperiences((anciennes) =>
+        anciennes.map((item) =>
+          item.id === experienceEditee.id ? expMiseAJour : item
+        )
+      );
+
+      setExperienceEditee(null);
+      setFormulaire(FORMULAIRE_VIDE);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error);
+      setErreur("Impossible de mettre à jour l'expérience.");
+    } finally {
+      setActionEnCours(false);
+    }
+  }
+
   async function changerStatut(
     experience: ExperienceAdmin,
     statut: StatutExperienceAdmin
   ) {
-    if (experience.statut === statut) {
-      return;
-    }
+    if (experience.statut === statut) return;
 
     try {
       setExperienceEnModification(experience.id);
@@ -133,7 +222,7 @@ useEffect(() => {
       );
     } catch (error) {
       console.error("Erreur lors de la modification du statut :", error);
-      setErreur("Impossible de modifier le statut de l'expérience.");
+      setErreur("Impossible de modifier le statut.");
     } finally {
       setExperienceEnModification(null);
     }
@@ -141,12 +230,10 @@ useEffect(() => {
 
   async function supprimerExperience(experience: ExperienceAdmin) {
     const confirmer = window.confirm(
-      `Voulez-vous vraiment supprimer définitivement "${experience.titre}" ? Cette action est irréversible et supprimera aussi ses commentaires, réactions et signalements.`
+      `Voulez-vous vraiment supprimer définitivement "${experience.titre}" ? Cette action est irréversible.`
     );
 
-    if (!confirmer) {
-      return;
-    }
+    if (!confirmer) return;
 
     try {
       setExperienceEnModification(experience.id);
@@ -157,9 +244,13 @@ useEffect(() => {
       setExperiences((anciennes) =>
         anciennes.filter((ancienne) => ancienne.id !== experience.id)
       );
-      setTotal((ancien) => ancien - 1);
+      setTotal((ancien) => Math.max(0, ancien - 1));
+
+      if (experienceEditee?.id === experience.id) {
+        setExperienceEditee(null);
+      }
     } catch (error) {
-      console.error("Erreur lors de la suppression de l'expérience :", error);
+      console.error("Erreur lors de la suppression :", error);
       setErreur("Impossible de supprimer cette expérience.");
     } finally {
       setExperienceEnModification(null);
@@ -234,7 +325,7 @@ useEffect(() => {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      {/* EN-TÊTE */}
+      {/* EN-TÊTE ET ACTIONS GLOBALES */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
@@ -246,22 +337,36 @@ useEffect(() => {
             </Badge>
           </div>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-700/70">
-            Gérez les expériences publiées par la communauté et contrôlez leur visibilité.
+            Gérez la base des expériences de la communauté (ajout, édition, masquage et suppression).
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => chargerExperiences(page)}
-          disabled={chargement || experienceEnModification !== null}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <RefreshCw size={16} className={chargement ? "animate-spin" : ""} />
-          Actualiser
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setFormulaire(FORMULAIRE_VIDE);
+              setModalAjoutOuverte(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            <Plus size={16} />
+            Ajouter une expérience
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void chargerExperiences(page)}
+            disabled={chargement || experienceEnModification !== null}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={chargement ? "animate-spin" : ""} />
+            Actualiser
+          </button>
+        </div>
       </div>
 
-      {/* RECHERCHE */}
+      {/* BARRE DE RECHERCHE */}
       <Card className="border-blue-100 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -274,7 +379,7 @@ useEffect(() => {
                 type="search"
                 value={recherche}
                 onChange={(event) => setRecherche(event.target.value)}
-                placeholder="Rechercher une expérience, un auteur ou une catégorie..."
+                placeholder="Rechercher par titre, contenu, catégorie ou auteur..."
                 className="h-11 w-full rounded-xl border border-blue-200 bg-white px-4 text-sm text-blue-950 outline-none transition placeholder:text-blue-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10"
               />
             </div>
@@ -284,22 +389,16 @@ useEffect(() => {
             <button
               type="button"
               onClick={() => setRecherche("")}
-              className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-blue-600 transition hover:bg-blue-100 hover:text-blue-800"
+              className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-blue-600 transition hover:bg-blue-100"
             >
               <XCircle size={14} />
               Effacer
             </button>
           )}
         </div>
-
-        {recherche && (
-          <p className="mt-3 text-xs text-blue-600/60">
-            {experiencesFiltrees.length} résultat{experiencesFiltrees.length > 1 ? "s" : ""} sur cette page.
-          </p>
-        )}
       </Card>
 
-      {/* ERREUR */}
+      {/* NOTIFICATION D'ERREUR */}
       {erreur && (
         <Card className="border-red-200 bg-red-50 p-6">
           <div className="flex items-start gap-3">
@@ -309,186 +408,32 @@ useEffect(() => {
             <div className="flex-1">
               <h2 className="font-semibold text-red-900">Une erreur est survenue</h2>
               <p className="mt-1 text-sm text-red-700">{erreur}</p>
-              <button
-                type="button"
-                onClick={() => chargerExperiences(page)}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
-              >
-                <RefreshCw size={14} />
-                Réessayer
-              </button>
             </div>
           </div>
         </Card>
       )}
 
-      {/* CHARGEMENT */}
+      {/* TABLEAU / LISTE DES EXPÉRIENCES */}
       {chargement && experiences.length === 0 ? (
         <Card className="border-blue-100 p-12">
           <div className="flex flex-col items-center justify-center text-center">
             <Loader2 size={28} className="animate-spin text-blue-500" />
             <p className="mt-4 text-sm font-semibold text-blue-900">
-              Chargement des expériences...
-            </p>
-            <p className="mt-1 text-xs text-blue-600/60">
-              Récupération des données depuis le serveur.
+              Chargement des données...
             </p>
           </div>
         </Card>
       ) : (
         <Card className="overflow-hidden border-blue-100">
-          {/* MOBILE */}
-          <div className="divide-y divide-blue-100 md:hidden">
-            {experiencesFiltrees.length === 0 ? (
-              <div className="p-10 text-center">
-                <BookOpen size={32} className="mx-auto text-blue-200" />
-                <p className="mt-3 text-sm font-semibold text-blue-900">
-                  Aucune expérience trouvée
-                </p>
-                {recherche && (
-                  <p className="mt-1 text-xs text-blue-600/60">
-                    Essayez une autre recherche.
-                  </p>
-                )}
-              </div>
-            ) : (
-              experiencesFiltrees.map((experience) => (
-                <div key={experience.id} className="space-y-5 p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                        <UserRound size={18} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-blue-950">
-                          {experience.user.displayName || "Utilisateur sans nom"}
-                        </p>
-                        <p className="truncate text-xs text-blue-600/70">
-                          {experience.user.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <BadgeStatut statut={experience.statut} />
-                  </div>
-
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-lg bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
-                        {experience.categorie}
-                      </span>
-                      <span className="text-xs text-blue-600/60">
-                        {formaterDate(experience.createdAt)}
-                      </span>
-                    </div>
-
-                    <h2 className="mt-3 text-base font-semibold text-blue-950">
-                      {experience.titre}
-                    </h2>
-
-                    <p className="mt-2 line-clamp-4 text-sm leading-6 text-blue-700/70">
-                      {experience.probleme}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-xl bg-blue-50 p-3">
-                      <div className="flex items-center gap-1.5 text-blue-400">
-                        <MessageSquare size={13} />
-                        <span className="text-[11px]">Commentaires</span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-blue-950">
-                        {experience._count.comments}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-blue-50 p-3">
-                      <div className="flex items-center gap-1.5 text-blue-400">
-                        <Eye size={13} />
-                        <span className="text-[11px]">Réactions</span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-blue-950">
-                        {experience._count.reactions}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-blue-50 p-3">
-                      <div className="flex items-center gap-1.5 text-blue-400">
-                        <ShieldAlert size={13} />
-                        <span className="text-[11px]">Signalements</span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-blue-950">
-                        {experience._count.reports}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-blue-100 pt-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
-                      Modération
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        {experience.moderator ? (
-                          <>
-                            <p className="truncate text-xs font-medium text-blue-800">
-                              {experience.moderator.displayName || experience.moderator.email}
-                            </p>
-                            {experience.moderatedAt && (
-                              <p className="mt-0.5 text-[11px] text-blue-500">
-                                Modifiée le {formaterDate(experience.moderatedAt)}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-xs text-blue-500">Pas encore modérée</p>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={experience.statut}
-                          disabled={experienceEnModification === experience.id}
-                          onChange={(event) =>
-                            void changerStatut(
-                              experience,
-                              event.target.value as StatutExperienceAdmin
-                            )
-                          }
-                          className="max-w-170px rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 outline-none focus:border-blue-600 disabled:opacity-50"
-                        >
-                          <option value="PUBLISHED">Publiée</option>
-                          <option value="HIDDEN">Masquée</option>
-                        </select>
-
-                        <button
-                          type="button"
-                          onClick={() => void supprimerExperience(experience)}
-                          disabled={experienceEnModification === experience.id}
-                          className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Supprimer définitivement"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* DESKTOP */}
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-1150px">
+            <table className="w-full min-w-275">
               <thead className="border-b border-blue-100 bg-blue-50/60">
                 <tr className="text-left">
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Expérience</th>
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Auteur</th>
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Statut</th>
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Activité</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Modération</th>
+                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Actions</th>
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Date</th>
                 </tr>
               </thead>
@@ -517,7 +462,7 @@ useEffect(() => {
                                 {experience.categorie}
                               </span>
                             </div>
-                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-blue-600/70">
+                            <p className="mt-1 line-clamp-2 text-xs text-blue-600/70">
                               {experience.probleme}
                             </p>
                           </div>
@@ -530,11 +475,11 @@ useEffect(() => {
                             <UserRound size={14} />
                           </div>
                           <div className="min-w-0">
-                            <p className="max-w-180px truncate text-xs font-medium text-blue-800">
-                              {experience.user.displayName || "Sans nom"}
+                            <p className="max-w-37.5 truncate text-xs font-medium text-blue-800">
+                              {experience.user?.displayName || "Administrateur / Anonyme"}
                             </p>
-                            <p className="max-w-180px truncate text-[11px] text-blue-500">
-                              {experience.user.email}
+                            <p className="max-w-37.5 truncate text-[11px] text-blue-500">
+                              {experience.user?.email || "N/A"}
                             </p>
                           </div>
                         </div>
@@ -548,52 +493,50 @@ useEffect(() => {
                         <div className="flex flex-wrap gap-1.5">
                           <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
                             <MessageSquare size={12} />
-                            {experience._count.comments}
+                            {experience._count?.comments ?? 0}
                           </span>
                           <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                            👍{experience._count.reactions}
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                            <ShieldAlert size={12} />
-                            {experience._count.reports}
+                            👍 {experience._count?.reactions ?? 0}
                           </span>
                         </div>
                       </td>
 
                       <td className="px-5 py-4">
-                        <select
-                          value={experience.statut}
-                          disabled={experienceEnModification === experience.id}
-                          onChange={(event) =>
-                            void changerStatut(
-                              experience,
-                              event.target.value as StatutExperienceAdmin
-                            )
-                          }
-                          className="rounded-lg border border-blue-200 bg-white px-2.5 py-2 text-xs font-medium text-blue-700 outline-none focus:border-blue-600 disabled:opacity-50"
-                        >
-                          <option value="PUBLISHED">Publiée</option>
-                          <option value="HIDDEN">Masquée</option>
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => ouvrirEdition(experience)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-50"
+                          >
+                            <Pencil size={12} />
+                            Éditer
+                          </button>
 
-                        <div className="mt-2">
+                          <select
+                            value={experience.statut}
+                            disabled={experienceEnModification === experience.id}
+                            onChange={(event) =>
+                              void changerStatut(
+                                experience,
+                                event.target.value as StatutExperienceAdmin
+                              )
+                            }
+                            className="rounded-lg border border-blue-200 bg-white px-2 py-1.5 text-xs font-medium text-blue-700 outline-none disabled:opacity-50"
+                          >
+                            <option value="PUBLISHED">Publiée</option>
+                            <option value="HIDDEN">Masquée</option>
+                          </select>
+
                           <button
                             type="button"
                             onClick={() => void supprimerExperience(experience)}
                             disabled={experienceEnModification === experience.id}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-medium text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                            title="Supprimer définitivement"
+                            className="rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                            title="Supprimer"
                           >
-                            <Trash2 size={12} />
-                            Supprimer
+                            <Trash2 size={14} />
                           </button>
                         </div>
-
-                        {experience.moderator && (
-                          <p className="mt-1.5 max-w-180px truncate text-[10px] text-blue-500">
-                            Par {experience.moderator.displayName || experience.moderator.email}
-                          </p>
-                        )}
                       </td>
 
                       <td className="px-5 py-4">
@@ -615,8 +558,6 @@ useEffect(() => {
               <p className="text-xs text-blue-600/70">
                 Page <span className="font-semibold text-blue-900">{page}</span> sur{" "}
                 <span className="font-semibold text-blue-900">{pages}</span>
-                {" · "}
-                {total} expérience{total > 1 ? "s" : ""}
               </p>
 
               <div className="flex items-center gap-2">
@@ -624,7 +565,7 @@ useEffect(() => {
                   type="button"
                   onClick={pagePrecedente}
                   disabled={page <= 1 || chargement}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:opacity-40"
                 >
                   <ChevronLeft size={15} />
                   Précédent
@@ -633,7 +574,7 @@ useEffect(() => {
                   type="button"
                   onClick={pageSuivante}
                   disabled={page >= pages || chargement}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:opacity-40"
                 >
                   Suivant
                   <ChevronRight size={15} />
@@ -642,6 +583,223 @@ useEffect(() => {
             </div>
           )}
         </Card>
+      )}
+
+      {/* MODALE D'AJOUT */}
+      {modalAjoutOuverte && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+            <form onSubmit={(e) => void gererSoumissionAjout(e)}>
+              <div className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
+                <h2 className="text-lg font-semibold text-blue-950">
+                  Créer une nouvelle expérience
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setModalAjoutOuverte(false)}
+                  className="rounded-lg p-2 text-blue-400 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4 px-6 py-5">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Titre *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formulaire.titre}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, titre: e.target.value }))
+                    }
+                    placeholder="Ex: Problème de connexion PostgreSQL avec Docker"
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Catégorie *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formulaire.categorie}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
+                    }
+                    placeholder="Ex: Base de données / Backend / React"
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Description du Problème *
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formulaire.probleme}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
+                    }
+                    placeholder="Explication détaillée de la difficulté rencontrée..."
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Solution apportée (optionnel)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formulaire.solution}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
+                    }
+                    placeholder="La solution ou la démarche pour résoudre le problème..."
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-blue-100 px-6 py-4">
+                <button
+                  type="button"
+                  onClick={() => setModalAjoutOuverte(false)}
+                  className="rounded-xl border border-blue-200 px-4 py-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionEnCours}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {actionEnCours && <Loader2 size={14} className="animate-spin" />}
+                  Enregistrer l'expérience
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE DE MODIFICATION */}
+      {experienceEditee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+            <form onSubmit={(e) => void gererSoumissionModification(e)}>
+              <div className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
+                <h2 className="text-lg font-semibold text-blue-950">
+                  Modifier l'expérience
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setExperienceEditee(null)}
+                  className="rounded-lg p-2 text-blue-400 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4 px-6 py-5">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Titre
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formulaire.titre}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, titre: e.target.value }))
+                    }
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Catégorie
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formulaire.categorie}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
+                    }
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Problème
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formulaire.probleme}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Solution
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formulaire.solution}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-blue-100 px-6 py-4">
+                <button
+                  type="button"
+                  onClick={() => void supprimerExperience(experienceEditee)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                >
+                  <Trash2 size={14} />
+                  Supprimer
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setExperienceEditee(null)}
+                    className="rounded-xl border border-blue-200 px-4 py-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={actionEnCours}
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {actionEnCours && <Loader2 size={14} className="animate-spin" />}
+                    Sauvegarder
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

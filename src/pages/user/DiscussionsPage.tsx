@@ -104,7 +104,7 @@ function DiscussionCard({
         <div className="flex items-start gap-4">
           {/* Icône */}
 
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/20">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/20">
             <MessageCircle
               size={18}
               strokeWidth={2}
@@ -182,7 +182,7 @@ function DiscussionCard({
                 className="
                   inline-flex items-center
                   gap-2 rounded-xl
-                  bg-gradient-to-r
+                  bg-linear-to-br
                   from-blue-600
                   to-cyan-600
                   px-4 py-2.5
@@ -332,7 +332,7 @@ function DiscussionCard({
                   inline-flex items-center
                   justify-center gap-2
                   rounded-xl
-                  bg-gradient-to-r
+                  bg-linear-to-br
                   from-blue-600
                   to-cyan-600
                   px-4 py-2.5

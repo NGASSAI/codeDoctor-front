@@ -22,26 +22,49 @@ export interface DiagnosticResultat {
   apres: string;
 }
 
-export interface DiagnosticResponse {
+export interface CapaciteDiagnostic {
+  code: string;
+  titre: string;
+  categorie: CategorieDiagnostic;
+  severite: string;
+}
+
+/**
+ * Analyse locale du code (règles + syntaxe, sans IA).
+ *
+ * POST /api/diagnostic
+ */
+export async function analyserCode(parametres: {
+  code: string;
+  categorie: CategorieDiagnostic;
+}): Promise<{
   succes: boolean;
   categorie: CategorieDiagnostic;
   nombreProblemes: number;
   resultats: DiagnosticResultat[];
-}
-
-export interface DiagnosticInput {
-  code: string;
-  categorie: CategorieDiagnostic;
-}
-
-export async function analyserCode(
-  donnees: DiagnosticInput
-): Promise<DiagnosticResponse> {
-  const response =
-    await api.post<DiagnosticResponse>(
-      "/diagnostic",
-      donnees
-    );
+}> {
+  const response = await api.post<{
+    succes: boolean;
+    categorie: CategorieDiagnostic;
+    nombreProblemes: number;
+    resultats: DiagnosticResultat[];
+  }>("/diagnostic", parametres);
 
   return response.data;
+}
+
+/**
+ * Liste les capacités de détection sans IA pour une catégorie.
+ *
+ * GET /api/diagnostic/capacites
+ */
+export async function obtenirCapacites(
+  categorie: CategorieDiagnostic
+): Promise<CapaciteDiagnostic[]> {
+  const response = await api.get<{ capacites: CapaciteDiagnostic[] }>(
+    "/diagnostic/capacites",
+    { params: { categorie } }
+  );
+
+  return response.data.capacites;
 }

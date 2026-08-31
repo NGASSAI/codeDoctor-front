@@ -1,9 +1,9 @@
-
 import { api } from "../lib/api";
 
 import type {
   NotificationsAdminResponse,
   DashboardAdminResponse,
+  ExperienceAdmin,
   ExperiencesAdminResponse,
   ModifierPaiementAdminResponse,
   ModifierStatutExperienceResponse,
@@ -32,6 +32,7 @@ export async function obtenirNotificationsAdmin(
 
   return response.data;
 }
+
 /* =========================================================
    DASHBOARD
 ========================================================= */
@@ -44,7 +45,6 @@ export async function obtenirDashboardAdmin(): Promise<DashboardAdminResponse> {
 
   return response.data;
 }
-
 
 /* =========================================================
    UTILISATEURS
@@ -68,7 +68,6 @@ export async function obtenirUtilisateursAdmin(
   return response.data;
 }
 
-
 /* =========================================================
    EXPERIENCES
 ========================================================= */
@@ -91,6 +90,42 @@ export async function obtenirExperiencesAdmin(
   return response.data;
 }
 
+/**
+ * Créer une nouvelle expérience depuis l'espace admin.
+ */
+export async function creerExperienceAdmin(payload: {
+  titre: string;
+  categorie: string;
+  probleme: string;
+  solution?: string;
+}): Promise<ExperienceAdmin> {
+  const response = await api.post<ExperienceAdmin>(
+    "/admin/experiences",
+    payload
+  );
+
+  return response.data;
+}
+
+/**
+ * Modifier le contenu d'une expérience existante.
+ */
+export async function modifierExperienceAdmin(
+  id: string,
+  payload: {
+    titre: string;
+    categorie: string;
+    probleme: string;
+    solution?: string;
+  }
+): Promise<ExperienceAdmin> {
+  const response = await api.put<ExperienceAdmin>(
+    `/admin/experiences/${id}`,
+    payload
+  );
+
+  return response.data;
+}
 
 /**
  * Modifier le statut d'une expérience.
@@ -129,7 +164,6 @@ export async function supprimerExperienceAdmin(
   return response.data;
 }
 
-
 /* =========================================================
    SIGNALEMENTS
 ========================================================= */
@@ -151,7 +185,6 @@ export async function obtenirSignalementsAdmin(
 
   return response.data;
 }
-
 
 /**
  * Modifier le statut d'un signalement.
@@ -190,6 +223,7 @@ export async function supprimerSignalementAdmin(
 
   return response.data;
 }
+
 /* =========================================================
    PAIEMENTS
 ========================================================= */
@@ -216,7 +250,6 @@ export async function obtenirPaiementsAdmin(
   return response.data;
 }
 
-
 /**
  * Approuver une demande de paiement Premium.
  *
@@ -233,7 +266,6 @@ export async function approuverPaiementAdmin(
 
   return response.data;
 }
-
 
 /**
  * Rejeter une demande de paiement Premium.
@@ -263,7 +295,6 @@ export async function supprimerPaiementAdmin(
   return response.data;
 }
 
-
 /* =========================================================
    GESTION UTILISATEURS
 ========================================================= */
@@ -282,7 +313,6 @@ export async function bloquerUtilisateurAdmin(
   return response.data;
 }
 
-
 /**
  * Débloquer un utilisateur.
  */
@@ -297,7 +327,6 @@ export async function debloquerUtilisateurAdmin(
   return response.data;
 }
 
-
 /**
  * Supprimer un utilisateur.
  */
@@ -311,7 +340,6 @@ export async function supprimerUtilisateurAdmin(
 
   return response.data;
 }
-
 
 /**
  * Modifier le rôle d'un utilisateur.

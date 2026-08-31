@@ -1,9 +1,9 @@
-
 import {
   Bell,
   BookOpen,
   BrainCircuit,
   CreditCard,
+  Dumbbell,
   History,
   Home,
   LogOut,
@@ -51,6 +51,11 @@ export default function Sidebar({
           label: "Utilisateurs",
           icon: Users,
           path: "/admin/utilisateurs",
+        },
+        {
+          label: "Exercices",
+          icon: Dumbbell,
+          path: "/admin/exercices",
         },
         {
           label: "Expériences",
@@ -140,6 +145,7 @@ export default function Sidebar({
     return (
       path === "/admin" ||
       path === "/admin/dashboard" ||
+      path === "/admin/exercices" ||
       path === "/admin/profil" ||
       path === "/admin/parametres" ||
       path === "/dashboard" ||
@@ -438,7 +444,7 @@ export default function Sidebar({
           shadow-blue-900/5
           lg:flex
           lg:sticky
-        lg:top-17
+          lg:top-17
         "
       >
         {contenuSidebar}

@@ -388,7 +388,7 @@ function ExerciceCard({
           items-center
           justify-between
           rounded-xl
-          bg-gradient-to-r from-blue-600 to-cyan-600
+        bg-linear-to-r from-blue-600 to-cyan-600
           px-4 py-3
           text-sm
           font-medium

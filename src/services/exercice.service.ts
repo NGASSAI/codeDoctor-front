@@ -144,3 +144,85 @@ export type {
   Exercice,
   ExerciceDetail,
 };
+export interface ExerciceAdmin {
+  id: string;
+  title: string;
+  category: CategorieExercice;
+  difficulty: string;
+  buggyCode: string;
+  hint1: string;
+  hint2: string;
+  hint3: string;
+  solution: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+export interface DonneesExerciceFormulaire {
+  title: string;
+  category: CategorieExercice;
+  difficulty: string;
+  buggyCode: string;
+  hint1: string;
+  hint2: string;
+  hint3: string;
+  solution: string;
+  keywords: string[];
+}
+
+/**
+ * GET /api/exercices/admin/tous
+ */
+export async function obtenirExercicesAdmin(): Promise<{
+  exercices: ExerciceAdmin[];
+  total: number;
+}> {
+  const response = await api.get<{
+    exercices: ExerciceAdmin[];
+    total: number;
+  }>("/exercices/admin/tous");
+
+  return response.data;
+}
+
+/**
+ * POST /api/exercices/admin
+ */
+export async function creerExerciceAdmin(
+  donnees: DonneesExerciceFormulaire
+): Promise<{ message: string; exercice: ExerciceAdmin }> {
+  const response = await api.post<{
+    message: string;
+    exercice: ExerciceAdmin;
+  }>("/exercices/admin", donnees);
+
+  return response.data;
+}
+
+/**
+ * PUT /api/exercices/admin/:id
+ */
+export async function modifierExerciceAdmin(
+  id: string,
+  donnees: DonneesExerciceFormulaire
+): Promise<{ message: string; exercice: ExerciceAdmin }> {
+  const response = await api.put<{
+    message: string;
+    exercice: ExerciceAdmin;
+  }>(`/exercices/admin/${encodeURIComponent(id)}`, donnees);
+
+  return response.data;
+}
+
+/**
+ * DELETE /api/exercices/admin/:id
+ */
+export async function supprimerExerciceAdmin(
+  id: string
+): Promise<{ message: string }> {
+  const response = await api.delete<{ message: string }>(
+    `/exercices/admin/${encodeURIComponent(id)}`
+  );
+
+  return response.data;
+}
