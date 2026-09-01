@@ -54,6 +54,7 @@ const FORMULAIRE_VIDE: FormulaireExperience = {
   cause: "",
   solution: "",
 };
+
 const CATEGORIES = [
   { valeur: "JAVASCRIPT", label: "JavaScript" },
   { valeur: "TYPESCRIPT", label: "TypeScript" },
@@ -62,12 +63,11 @@ const CATEGORIES = [
   { valeur: "API", label: "API" },
   { valeur: "HTML_CSS", label: "HTML / CSS" },
 ];
+
 export default function ExperiencesAdminPage() {
   const [experiences, setExperiences] = useState<ExperienceAdmin[]>([]);
-
   const [page, setPage] = useState(1);
   const [limite] = useState(10);
-
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
 
@@ -75,16 +75,12 @@ export default function ExperiencesAdminPage() {
   const [actionEnCours, setActionEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
 
-  const [experienceEnModification, setExperienceEnModification] =
-    useState<string | null>(null);
-
+  const [experienceEnModification, setExperienceEnModification] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
 
   // Modales
   const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false);
-  const [experienceEditee, setExperienceEditee] =
-    useState<ExperienceAdmin | null>(null);
-
+  const [experienceEditee, setExperienceEditee] = useState<ExperienceAdmin | null>(null);
   const [formulaire, setFormulaire] = useState<FormulaireExperience>(FORMULAIRE_VIDE);
 
   const chargerExperiences = useCallback(
@@ -112,13 +108,13 @@ export default function ExperiencesAdminPage() {
   useEffect(() => {
     let estMonte = true;
 
-    const ExecuterChargement = async () => {
+    const executerChargement = async () => {
       if (estMonte) {
         await chargerExperiences(page);
       }
     };
 
-    void ExecuterChargement();
+    void executerChargement();
 
     return () => {
       estMonte = false;
@@ -128,17 +124,15 @@ export default function ExperiencesAdminPage() {
   const experiencesFiltrees = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
-    if (!terme) {
-      return experiences;
-    }
+    if (!terme) return experiences;
 
     return experiences.filter((experience) => {
       return (
         experience.titre.toLowerCase().includes(terme) ||
         experience.probleme.toLowerCase().includes(terme) ||
         experience.categorie.toLowerCase().includes(terme) ||
-        experience.user.email.toLowerCase().includes(terme) ||
-        (experience.user.displayName ?? "").toLowerCase().includes(terme)
+        experience.user?.email.toLowerCase().includes(terme) ||
+        (experience.user?.displayName ?? "").toLowerCase().includes(terme)
       );
     });
   }, [experiences, recherche]);
@@ -147,7 +141,7 @@ export default function ExperiencesAdminPage() {
 
   async function gererSoumissionAjout(e: React.FormEvent) {
     e.preventDefault();
-        if (
+    if (
       !formulaire.titre ||
       !formulaire.categorie ||
       !formulaire.probleme ||
@@ -178,16 +172,17 @@ export default function ExperiencesAdminPage() {
     }
   }
 
-    function ouvrirEdition(exp: ExperienceAdmin) {
+  function ouvrirEdition(exp: ExperienceAdmin) {
     setExperienceEditee(exp);
     setFormulaire({
       titre: exp.titre,
       categorie: exp.categorie,
       probleme: exp.probleme,
-      cause: (exp as unknown as { cause?: string }).cause || "",
-      solution: (exp as unknown as { solution?: string }).solution || "",
+      cause: exp.cause || "",
+      solution: exp.solution || "",
     });
   }
+
   async function gererSoumissionModification(e: React.FormEvent) {
     e.preventDefault();
     if (!experienceEditee) return;
@@ -274,14 +269,6 @@ export default function ExperiencesAdminPage() {
     }
   }
 
-  function pagePrecedente() {
-    if (page > 1) setPage((p) => p - 1);
-  }
-
-  function pageSuivante() {
-    if (page < pages) setPage((p) => p + 1);
-  }
-
   function formaterDate(date: string) {
     return new Intl.DateTimeFormat("fr-FR", {
       day: "2-digit",
@@ -308,30 +295,14 @@ export default function ExperiencesAdminPage() {
   }
 
   function BadgeStatut({ statut }: { statut: StatutExperienceAdmin }) {
-    if (statut === "PUBLISHED") {
-      return (
-        <Badge variant="success">
-          <span className="inline-flex items-center gap-1.5">
-            <StatutIcon statut={statut} />
-            {libelleStatut(statut)}
-          </span>
-        </Badge>
-      );
-    }
-
-    if (statut === "HIDDEN") {
-      return (
-        <Badge variant="warning">
-          <span className="inline-flex items-center gap-1.5">
-            <StatutIcon statut={statut} />
-            {libelleStatut(statut)}
-          </span>
-        </Badge>
-      );
-    }
+    const variantMap = {
+      PUBLISHED: "success",
+      HIDDEN: "warning",
+      DELETED: "danger",
+    } as const;
 
     return (
-      <Badge variant="danger">
+      <Badge variant={variantMap[statut]}>
         <span className="inline-flex items-center gap-1.5">
           <StatutIcon statut={statut} />
           {libelleStatut(statut)}
@@ -430,7 +401,7 @@ export default function ExperiencesAdminPage() {
         </Card>
       )}
 
-      {/* TABLEAU / LISTE DES EXPÉRIENCES */}
+      {/* TABLEAU DES EXPÉRIENCES */}
       {chargement && experiences.length === 0 ? (
         <Card className="border-blue-100 p-12">
           <div className="flex flex-col items-center justify-center text-center">
@@ -442,8 +413,8 @@ export default function ExperiencesAdminPage() {
         </Card>
       ) : (
         <Card className="overflow-hidden border-blue-100">
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-275">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-700px">
               <thead className="border-b border-blue-100 bg-blue-50/60">
                 <tr className="text-left">
                   <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-blue-500">Expérience</th>
@@ -492,10 +463,10 @@ export default function ExperiencesAdminPage() {
                             <UserRound size={14} />
                           </div>
                           <div className="min-w-0">
-                            <p className="max-w-37.5 truncate text-xs font-medium text-blue-800">
+                            <p className="max-w-150px truncate text-xs font-medium text-blue-800">
                               {experience.user?.displayName || "Administrateur / Anonyme"}
                             </p>
-                            <p className="max-w-37.5 truncate text-[11px] text-blue-500">
+                            <p className="max-w-150px truncate text-[11px] text-blue-500">
                               {experience.user?.email || "N/A"}
                             </p>
                           </div>
@@ -580,7 +551,7 @@ export default function ExperiencesAdminPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={pagePrecedente}
+                  onClick={() => page > 1 && setPage((p) => p - 1)}
                   disabled={page <= 1 || chargement}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:opacity-40"
                 >
@@ -589,7 +560,7 @@ export default function ExperiencesAdminPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={pageSuivante}
+                  onClick={() => page < pages && setPage((p) => p + 1)}
                   disabled={page >= pages || chargement}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 disabled:opacity-40"
                 >
@@ -602,18 +573,21 @@ export default function ExperiencesAdminPage() {
         </Card>
       )}
 
-      {/* MODALE D'AJOUT */}
-      {modalAjoutOuverte && (
+      {/* MODALE D'AJOUT ET DE MODIFICATION PARTAGÉE OU SEPARÉE PROPREMENT */}
+      {(modalAjoutOuverte || experienceEditee) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <form onSubmit={(e) => void gererSoumissionAjout(e)}>
+            <form onSubmit={(e) => void (experienceEditee ? gererSoumissionModification(e) : gererSoumissionAjout(e))}>
               <div className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
                 <h2 className="text-lg font-semibold text-blue-950">
-                  Créer une nouvelle expérience
+                  {experienceEditee ? "Modifier l'expérience" : "Créer une nouvelle expérience"}
                 </h2>
                 <button
                   type="button"
-                  onClick={() => setModalAjoutOuverte(false)}
+                  onClick={() => {
+                    setModalAjoutOuverte(false);
+                    setExperienceEditee(null);
+                  }}
                   className="rounded-lg p-2 text-blue-400 hover:bg-blue-50 hover:text-blue-700"
                 >
                   <X size={18} />
@@ -622,31 +596,29 @@ export default function ExperiencesAdminPage() {
 
               <div className="space-y-4 px-6 py-5">
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                  <label htmlFor="titre" className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Titre *
                   </label>
                   <input
+                    id="titre"
                     type="text"
                     required
                     value={formulaire.titre}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, titre: e.target.value }))
-                    }
+                    onChange={(e) => setFormulaire((f) => ({ ...f, titre: e.target.value }))}
                     placeholder="Ex: Problème de connexion PostgreSQL avec Docker"
                     className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
-{/* ----------------------------------- */}
-                              <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+
+                <div>
+                  <label htmlFor="categorie" className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Catégorie *
                   </label>
                   <select
+                    id="categorie"
                     required
                     value={formulaire.categorie}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
-                    }
+                    onChange={(e) => setFormulaire((f) => ({ ...f, categorie: e.target.value }))}
                     className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
                   >
                     {CATEGORIES.map((cat) => (
@@ -658,79 +630,45 @@ export default function ExperiencesAdminPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                  <label htmlFor="probleme" className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Description du Problème *
                   </label>
                   <textarea
+                    id="probleme"
                     required
                     rows={4}
                     value={formulaire.probleme}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
-                    }
+                    onChange={(e) => setFormulaire((f) => ({ ...f, probleme: e.target.value }))}
                     placeholder="Explication détaillée de la difficulté rencontrée..."
                     className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                  <label htmlFor="cause" className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Cause identifiée *
                   </label>
                   <textarea
+                    id="cause"
                     required
                     rows={3}
                     value={formulaire.cause}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, cause: e.target.value }))
-                    }
+                    onChange={(e) => setFormulaire((f) => ({ ...f, cause: e.target.value }))}
                     placeholder="Qu'est-ce qui causait ce problème ?"
                     className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                  <label htmlFor="solution" className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Solution apportée *
                   </label>
                   <textarea
+                    id="solution"
                     required
                     rows={4}
                     value={formulaire.solution}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
-                    }
-                    placeholder="La solution ou la démarche pour résoudre le problème..."
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Description du Problème *
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={formulaire.probleme}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
-                    }
-                    placeholder="Explication détaillée de la difficulté rencontrée..."
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Solution apportée (optionnel)
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formulaire.solution}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
-                    }
+                    onChange={(e) => setFormulaire((f) => ({ ...f, solution: e.target.value }))}
                     placeholder="La solution ou la démarche pour résoudre le problème..."
                     className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
                   />
@@ -740,7 +678,10 @@ export default function ExperiencesAdminPage() {
               <div className="flex items-center justify-end gap-3 border-t border-blue-100 px-6 py-4">
                 <button
                   type="button"
-                  onClick={() => setModalAjoutOuverte(false)}
+                  onClick={() => {
+                    setModalAjoutOuverte(false);
+                    setExperienceEditee(null);
+                  }}
                   className="rounded-xl border border-blue-200 px-4 py-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-50"
                 >
                   Annuler
@@ -751,170 +692,8 @@ export default function ExperiencesAdminPage() {
                   className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   {actionEnCours && <Loader2 size={14} className="animate-spin" />}
-                  Enregistrer l'expérience
+                  {experienceEditee ? "Enregistrer les modifications" : "Enregistrer l'expérience"}
                 </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODALE DE MODIFICATION */}
-      {experienceEditee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <form onSubmit={(e) => void gererSoumissionModification(e)}>
-              <div className="flex items-center justify-between border-b border-blue-100 px-6 py-4">
-                <h2 className="text-lg font-semibold text-blue-950">
-                  Modifier l'expérience
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setExperienceEditee(null)}
-                  className="rounded-lg p-2 text-blue-400 hover:bg-blue-50 hover:text-blue-700"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="space-y-4 px-6 py-5">
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Titre
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formulaire.titre}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, titre: e.target.value }))
-                    }
-                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Catégorie
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formulaire.categorie}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
-                    }
-                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-{/* ------------------------- */}
-                               <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Catégorie
-                  </label>
-                  <select
-                    required
-                    value={formulaire.categorie}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
-                    }
-                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.valeur} value={cat.valeur}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Problème
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={formulaire.probleme}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Cause
-                  </label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={formulaire.cause}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, cause: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Solution
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={formulaire.solution}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
-                    Solution
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formulaire.solution}
-                    onChange={(e) =>
-                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-blue-100 px-6 py-4">
-                <button
-                  type="button"
-                  onClick={() => void supprimerExperience(experienceEditee)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
-                >
-                  <Trash2 size={14} />
-                  Supprimer
-                </button>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setExperienceEditee(null)}
-                    className="rounded-xl border border-blue-200 px-4 py-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={actionEnCours}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {actionEnCours && <Loader2 size={14} className="animate-spin" />}
-                    Sauvegarder
-                  </button>
-                </div>
               </div>
             </form>
           </div>

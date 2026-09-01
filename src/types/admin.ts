@@ -120,6 +120,8 @@ export type StatutExperienceAdmin =
 export interface ExperienceAdmin {
   id: string;
   titre: string;
+  cause?: string;    
+  solution?: string;
   probleme: string;
   categorie: string;
   statut: StatutExperienceAdmin;
@@ -164,6 +166,8 @@ export interface UtilisateurSignalementAdmin {
 export interface ExperienceSignaleeAdmin {
   id: string;
   titre: string;
+  cause?: string;    
+  solution?: string;
   probleme: string;
   categorie: string;
 }
