@@ -134,7 +134,7 @@ export default function ConnexionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-cyan-50 to-slate-50">
       {/* Bouton de retour */}
       <motion.button
         type="button"
@@ -153,7 +153,7 @@ export default function ConnexionPage() {
             PRÉSENTATION
         ========================== */}
 
-        <section className="relative hidden overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900 lg:flex">
+        <section className="relative hidden overflow-hidden bg-linear-to-br from-blue-900 via-blue-800 to-cyan-900 lg:flex">
           <div className="absolute inset-0">
             <motion.div
               animate={{
@@ -179,7 +179,7 @@ export default function ConnexionPage() {
                 ease: "easeInOut",
                 delay: 1
               }}
-              className="absolute -bottom-40 -right-20 h-[30rem] w-[30rem] rounded-full bg-blue-400/20 blur-3xl"
+              className="absolute -bottom-40 -right-20 h-120 w-120 rounded-full bg-blue-400/20 blur-3xl"
             />
           </div>
 
@@ -249,7 +249,7 @@ export default function ConnexionPage() {
             <div className="mb-10 lg:hidden">
               <div className="flex items-center gap-3">
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
                   <Code2 size={20} />
                 </div>
 
@@ -392,7 +392,7 @@ export default function ConnexionPage() {
                 disabled={chargement}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {chargement ? (
                   <>

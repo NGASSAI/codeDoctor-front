@@ -52,10 +52,10 @@ export default function Navbar({
           setNotificationsAdminNonLues(0);
         }
       })();
-      return;
+    } else {
+      void chargerCompteur();
     }
 
-    void chargerCompteur();
     initialiserEcoute();
   }, [admin, chargerCompteur, initialiserEcoute]);
 
@@ -156,7 +156,7 @@ export default function Navbar({
             >
               <motion.div
                 animate={
-                  notificationsNonLues > 0
+                  compteurNotifications > 0
                     ? { rotate: [0, -10, 10, -10, 10, 0] }
                     : {}
                 }
