@@ -230,6 +230,22 @@ export default function PremiumPage() {
         error
       );
 
+      const statut = (error as { response?: { status?: number } })?.response?.status;
+
+      if (statut === 404) {
+        setErreur(
+          "Le service de notification admin est introuvable ou n'est pas encore activé côté backend."
+        );
+        return;
+      }
+
+      if (statut === 401) {
+        setErreur(
+          "Vous devez être connecté pour envoyer ce message à l'administration."
+        );
+        return;
+      }
+
       setErreur(
         "Impossible d'envoyer votre message."
       );

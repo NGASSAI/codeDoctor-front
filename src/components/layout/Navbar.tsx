@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Bell,
@@ -8,6 +8,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+import { obtenirNotificationsAdmin } from "../../services/admin.service";
 import { useNotificationStore } from "../../stores/notification.store";
 import { useAuthStore } from "../../stores/auth.store";
 
@@ -27,6 +28,8 @@ export default function Navbar({
 
   const utilisateur = useAuthStore((state) => state.utilisateur);
 
+  const [notificationsAdminNonLues, setNotificationsAdminNonLues] = useState(0);
+
   const notificationsNonLues = useNotificationStore(
     (state) => state.nombreNonLues
   );
@@ -38,9 +41,27 @@ export default function Navbar({
   );
 
   useEffect(() => {
+    if (admin) {
+      void (async () => {
+        try {
+          const resultat = await obtenirNotificationsAdmin(1, 100);
+          setNotificationsAdminNonLues(
+            resultat.notifications.filter((notification) => !notification.lue).length
+          );
+        } catch {
+          setNotificationsAdminNonLues(0);
+        }
+      })();
+      return;
+    }
+
     void chargerCompteur();
     initialiserEcoute();
-  }, [chargerCompteur, initialiserEcoute]);
+  }, [admin, chargerCompteur, initialiserEcoute]);
+
+  const compteurNotifications = admin
+    ? notificationsAdminNonLues
+    : notificationsNonLues;
 
   const estPageAccueil = admin
     ? location.pathname === "/admin" ||
@@ -125,9 +146,9 @@ export default function Navbar({
             <Link
               to={admin ? "/admin/notifications" : "/notifications"}
               aria-label={
-                notificationsNonLues > 0
-                  ? `Notifications, ${notificationsNonLues} non lue${
-                      notificationsNonLues > 1 ? "s" : ""
+                compteurNotifications > 0
+                  ? `Notifications, ${compteurNotifications} non lue${
+                      compteurNotifications > 1 ? "s" : ""
                     }`
                   : "Notifications"
               }
@@ -144,14 +165,14 @@ export default function Navbar({
                 <Bell size={20} strokeWidth={2} />
               </motion.div>
 
-              {notificationsNonLues > 0 && (
+              {compteurNotifications > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 10 }}
                   className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold leading-none text-white ring-2 ring-white shadow-sm"
                 >
-                  {notificationsNonLues > 99 ? "99+" : notificationsNonLues}
+                  {compteurNotifications > 99 ? "99+" : compteurNotifications}
                 </motion.span>
               )}
             </Link>

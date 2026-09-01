@@ -1,9 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Bell, Check, CheckCheck, Loader2, Trash2 } from "lucide-react";
 
 import Card from "../../components/ui/Card";
-
-import { useNotificationStore } from "../../stores/notification.store";
+import {
+  obtenirNotificationsAdmin,
+  marquerNotificationCommeLueAdmin as marquerNotificationCommeLueAdminAPI,
+  marquerToutesCommeLuesAdmin as marquerToutesCommeLuesAdminAPI,
+  supprimerNotificationAdmin as supprimerNotificationAdminAPI,
+} from "../../services/admin.service";
+import type { NotificationAdmin } from "../../types/admin";
 
 function formaterDate(date: string) {
   const valeur = new Date(date);
@@ -15,33 +20,45 @@ function formaterDate(date: string) {
 }
 
 export default function NotificationsAdminPage() {
-  const notifications = useNotificationStore((state) => state.notifications);
-  const chargement = useNotificationStore((state) => state.chargement);
-  const chargerNotifications = useNotificationStore(
-    (state) => state.chargerNotifications
-  );
-  const marquerCommeLueStore = useNotificationStore(
-    (state) => state.marquerCommeLue
-  );
-  const marquerToutesCommeLuesStore = useNotificationStore(
-    (state) => state.marquerToutesCommeLues
-  );
-  const supprimerNotificationStore = useNotificationStore(
-    (state) => state.supprimerNotification
-  );
+  const [notifications, setNotifications] = useState<NotificationAdmin[]>([]);
+  const [chargement, setChargement] = useState(true);
 
   const [erreur, setErreur] = useState("");
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
 
+  const chargerNotifications = useCallback(async () => {
+    try {
+      setChargement(true);
+      setErreur("");
+      const resultat = await obtenirNotificationsAdmin(1, 50);
+      setNotifications(resultat.notifications);
+    } catch (error) {
+      console.error("Erreur chargement notifications admin :", error);
+      setErreur("Impossible de récupérer les notifications administratives.");
+      setNotifications([]);
+    } finally {
+      setChargement(false);
+    }
+  }, []);
+
   useEffect(() => {
-    void chargerNotifications();
+    const timer = window.setTimeout(() => {
+      void chargerNotifications();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [chargerNotifications]);
 
   async function marquerCommeLue(id: string) {
     try {
       setActionEnCours(id);
       setErreur("");
-      await marquerCommeLueStore(id);
+      await marquerNotificationCommeLueAdminAPI(id);
+      setNotifications((anciennes) =>
+        anciennes.map((notification) =>
+          notification.id === id ? { ...notification, lue: true } : notification
+        )
+      );
     } catch (error) {
       console.error("Erreur marquage notification :", error);
       setErreur("Impossible de mettre à jour cette notification.");
@@ -50,11 +67,14 @@ export default function NotificationsAdminPage() {
     }
   }
 
-  async function marquerToutesCommeLuesAdmin() {
+  async function marquerToutesCommeLuesAdminAction() {
     try {
       setActionEnCours("toutes");
       setErreur("");
-      await marquerToutesCommeLuesStore();
+      await marquerToutesCommeLuesAdminAPI();
+      setNotifications((anciennes) =>
+        anciennes.map((notification) => ({ ...notification, lue: true }))
+      );
     } catch (error) {
       console.error("Erreur marquage notifications :", error);
       setErreur("Impossible de marquer toutes les notifications comme lues.");
@@ -72,7 +92,10 @@ export default function NotificationsAdminPage() {
     try {
       setActionEnCours(id);
       setErreur("");
-      await supprimerNotificationStore(id);
+      await supprimerNotificationAdminAPI(id);
+      setNotifications((anciennes) =>
+        anciennes.filter((notification) => notification.id !== id)
+      );
     } catch (error) {
       console.error("Erreur suppression notification :", error);
       setErreur("Impossible de supprimer cette notification.");
@@ -104,7 +127,7 @@ export default function NotificationsAdminPage() {
           {notificationsNonLues > 0 && (
             <button
               type="button"
-              onClick={() => void marquerToutesCommeLuesAdmin()}
+              onClick={() => void marquerToutesCommeLuesAdminAction()}
               disabled={actionEnCours === "toutes"}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
             >

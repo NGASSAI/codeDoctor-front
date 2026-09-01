@@ -33,6 +33,22 @@ export async function obtenirNotificationsAdmin(
   return response.data;
 }
 
+export async function marquerNotificationCommeLueAdmin(
+  id: string
+): Promise<void> {
+  await api.patch(`/admin/notifications/${encodeURIComponent(id)}/lue`);
+}
+
+export async function marquerToutesCommeLuesAdmin(): Promise<void> {
+  await api.patch("/admin/notifications/lues");
+}
+
+export async function supprimerNotificationAdmin(
+  id: string
+): Promise<void> {
+  await api.delete(`/admin/notifications/${encodeURIComponent(id)}`);
+}
+
 /* =========================================================
    DASHBOARD
 ========================================================= */
