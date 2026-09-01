@@ -43,16 +43,25 @@ interface FormulaireExperience {
   titre: string;
   categorie: string;
   probleme: string;
+  cause: string;
   solution: string;
 }
 
 const FORMULAIRE_VIDE: FormulaireExperience = {
   titre: "",
-  categorie: "",
+  categorie: "JAVASCRIPT",
   probleme: "",
+  cause: "",
   solution: "",
 };
-
+const CATEGORIES = [
+  { valeur: "JAVASCRIPT", label: "JavaScript" },
+  { valeur: "TYPESCRIPT", label: "TypeScript" },
+  { valeur: "REACT", label: "React" },
+  { valeur: "HTTP", label: "HTTP" },
+  { valeur: "API", label: "API" },
+  { valeur: "HTML_CSS", label: "HTML / CSS" },
+];
 export default function ExperiencesAdminPage() {
   const [experiences, setExperiences] = useState<ExperienceAdmin[]>([]);
 
@@ -138,8 +147,16 @@ export default function ExperiencesAdminPage() {
 
   async function gererSoumissionAjout(e: React.FormEvent) {
     e.preventDefault();
-    if (!formulaire.titre || !formulaire.categorie || !formulaire.probleme) {
-      setErreur("Veuillez remplir les champs obligatoires (Titre, Catégorie, Problème).");
+        if (
+      !formulaire.titre ||
+      !formulaire.categorie ||
+      !formulaire.probleme ||
+      !formulaire.cause ||
+      !formulaire.solution
+    ) {
+      setErreur(
+        "Veuillez remplir tous les champs obligatoires (Titre, Catégorie, Problème, Cause, Solution)."
+      );
       return;
     }
 
@@ -161,16 +178,16 @@ export default function ExperiencesAdminPage() {
     }
   }
 
-  function ouvrirEdition(exp: ExperienceAdmin) {
+    function ouvrirEdition(exp: ExperienceAdmin) {
     setExperienceEditee(exp);
     setFormulaire({
       titre: exp.titre,
       categorie: exp.categorie,
       probleme: exp.probleme,
+      cause: (exp as unknown as { cause?: string }).cause || "",
       solution: (exp as unknown as { solution?: string }).solution || "",
     });
   }
-
   async function gererSoumissionModification(e: React.FormEvent) {
     e.preventDefault();
     if (!experienceEditee) return;
@@ -619,20 +636,72 @@ export default function ExperiencesAdminPage() {
                     className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
-
-                <div>
+{/* ----------------------------------- */}
+                              <div>
                   <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
                     Catégorie *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={formulaire.categorie}
                     onChange={(e) =>
                       setFormulaire((f) => ({ ...f, categorie: e.target.value }))
                     }
-                    placeholder="Ex: Base de données / Backend / React"
                     className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.valeur} value={cat.valeur}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Description du Problème *
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formulaire.probleme}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, probleme: e.target.value }))
+                    }
+                    placeholder="Explication détaillée de la difficulté rencontrée..."
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Cause identifiée *
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={formulaire.cause}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, cause: e.target.value }))
+                    }
+                    placeholder="Qu'est-ce qui causait ce problème ?"
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Solution apportée *
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formulaire.solution}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
+                    }
+                    placeholder="La solution ou la démarche pour résoudre le problème..."
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
 
@@ -738,6 +807,26 @@ export default function ExperiencesAdminPage() {
                     className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
                   />
                 </div>
+{/* ------------------------- */}
+                               <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Catégorie
+                  </label>
+                  <select
+                    required
+                    value={formulaire.categorie}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, categorie: e.target.value }))
+                    }
+                    className="mt-1 h-10 w-full rounded-xl border border-blue-200 px-3 text-sm outline-none focus:border-blue-600"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.valeur} value={cat.valeur}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
@@ -749,6 +838,36 @@ export default function ExperiencesAdminPage() {
                     value={formulaire.probleme}
                     onChange={(e) =>
                       setFormulaire((f) => ({ ...f, probleme: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Cause
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={formulaire.cause}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, cause: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-blue-500">
+                    Solution
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formulaire.solution}
+                    onChange={(e) =>
+                      setFormulaire((f) => ({ ...f, solution: e.target.value }))
                     }
                     className="mt-1 w-full rounded-xl border border-blue-200 p-3 text-sm outline-none focus:border-blue-600"
                   />

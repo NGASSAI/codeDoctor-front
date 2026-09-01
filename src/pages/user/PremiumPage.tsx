@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
+import HelpButton from "../../components/ui/HelpButton";
 
 import {
   obtenirMonAbonnement,
@@ -249,20 +250,36 @@ export default function PremiumPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8">
       <section>
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600">
-          <ShieldCheck size={14} />
-          CodeDoctor Premium
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600">
+              <ShieldCheck size={14} />
+              CodeDoctor Premium
+            </div>
+
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              Débloquez Premium
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
+              Obtenez un accès Premium pendant 30 jours
+              avec un paiement validé manuellement par
+              l'administration.
+            </p>
+          </div>
+
+          <HelpButton
+            title="Aide – Premium"
+            description="Cette page sert à demander et suivre votre abonnement Premium, ainsi qu’à contacter l’administration si besoin."
+            items={[
+              "Cliquez sur 'Demander Premium' pour créer une demande d'abonnement valable pour 30 jours.",
+              "Le paiement est fixé à 2 500 FCFA et doit être validé manuellement par l'administration.",
+              "Suivez le statut de votre demande dans l'historique des paiements pour savoir si elle est en attente, approuvée ou rejetée.",
+              "Si vous rencontrez un souci, contactez l'administration via WhatsApp ou par message pour finaliser la procédure.",
+              "Une fois activé, votre plan Premium s'affiche dans l'interface avec la date de renouvellement associée."
+            ]}
+          />
         </div>
-
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Débloquez Premium
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-          Obtenez un accès Premium pendant 30 jours
-          avec un paiement validé manuellement par
-          l'administration.
-        </p>
       </section>
 
       {erreur && (

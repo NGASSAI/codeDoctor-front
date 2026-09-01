@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
+import HelpButton from "../../components/ui/HelpButton";
 
 import {
   obtenirExperiences,
@@ -714,23 +715,39 @@ export default function DiscussionsPage() {
       ========================== */}
 
       <section>
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
-          <MessageCircle
-            size={14}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+              <MessageCircle
+                size={14}
+              />
+
+              Communauté CodeDoctor
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Discussions
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+              Échangez avec d'autres développeurs
+              autour de problèmes réels, de
+              solutions et de bonnes pratiques.
+            </p>
+          </div>
+
+          <HelpButton
+            title="Aide – Discussions"
+            description="Cette section permet d’échanger avec la communauté sur des problèmes techniques réels et des solutions concrètes."
+            items={[
+              "Consultez les expériences publiées pour comprendre les erreurs rencontrées par d'autres développeurs.",
+              "Ouvrez une discussion pour lire les commentaires et les solutions proposées.",
+              "Publiez un commentaire utile, précis et bien argumenté pour aider la communauté.",
+              "Respectez le cadre de la discussion : partagez des pistes de solution, des explications et des bonnes pratiques.",
+              "Utilisez cette page comme espace d’apprentissage collaboratif et de veille technique."
+            ]}
           />
-
-          Communauté CodeDoctor
         </div>
-
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Discussions
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-          Échangez avec d'autres développeurs
-          autour de problèmes réels, de
-          solutions et de bonnes pratiques.
-        </p>
       </section>
 
       {/* =========================

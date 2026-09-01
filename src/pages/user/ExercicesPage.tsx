@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
+import HelpButton from "../../components/ui/HelpButton";
 import { obtenirExercices } from "../../services/exercice.service";
 
 import type {
@@ -150,24 +151,40 @@ export default function ExercicesPage() {
       {/* EN-TÊTE */}
 
       <div>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
-            Exercices
-          </h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
+                Exercices
+              </h1>
 
-          {!chargement && (
-            <Badge>
-              {exercices.length} exercice
-              {exercices.length > 1 ? "s" : ""}
-            </Badge>
-          )}
+              {!chargement && (
+                <Badge>
+                  {exercices.length} exercice
+                  {exercices.length > 1 ? "s" : ""}
+                </Badge>
+              )}
+            </div>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+              Entraînez-vous à identifier et corriger des
+              problèmes de code. La correction est vérifiée
+              directement par CodeDoctor.
+            </p>
+          </div>
+
+          <HelpButton
+            title="Aide – Exercices"
+            description="Cette page sert à pratiquer sur des bugs réels et à renforcer tes compétences par la résolution de problèmes concrets."
+            items={[
+              "Utilise la recherche pour trouver rapidement un exercice par mot-clé ou titre.",
+              "Filtre par catégorie pour travailler sur un langage ou un domaine précis comme React ou API.",
+              "Chaque carte présente le bug à corriger, la difficulté et le contexte technique.",
+              "Clique sur 'Commencer l'exercice' pour ouvrir le défi et tester ta résolution.",
+              "Travail sur des exercices de difficulté progressive pour mieux maîtriser les erreurs fréquentes."
+            ]}
+          />
         </div>
-
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
-          Entraînez-vous à identifier et corriger des
-          problèmes de code. La correction est vérifiée
-          directement par CodeDoctor.
-        </p>
       </div>
 
       {/* FILTRES */}

@@ -5,6 +5,7 @@ import {
   CreditCard,
   Dumbbell,
   History,
+  Lightbulb,
   Home,
   LogOut,
   MessageCircle,
@@ -98,6 +99,11 @@ export default function Sidebar({
           label: "Exercices",
           icon: BookOpen,
           path: "/exercices",
+        },
+                {
+          label: "Expériences",
+          icon: Lightbulb,
+          path: "/experiences",
         },
         {
           label: "Historique",

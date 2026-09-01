@@ -11,6 +11,7 @@ import {
 
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
+import HelpButton from "../../components/ui/HelpButton";
 
 import {
   analyserCode,
@@ -173,18 +174,34 @@ export default function DiagnosticPage() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8">
       <section>
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700">
-          <Code2 size={14} />
-          Diagnostic CodeDoctor
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700">
+              <Code2 size={14} />
+              Diagnostic CodeDoctor
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-blue-950 sm:text-4xl">
+              Analysez votre code
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-700/70 sm:text-base">
+              CodeDoctor recherche d'abord les problèmes connus dans sa propre base de règles et vous explique directement comment les corriger.
+            </p>
+          </div>
+
+          <HelpButton
+            title="Aide – Diagnostic"
+            description="Cette page sert à détecter les erreurs de code et à comprendre leur cause avant de corriger le projet."
+            items={[
+              "Choisissez la catégorie du code pour cibler les règles de détection adaptées.",
+              "Collez un extrait de code et lancez l'analyse pour voir les erreurs détectées.",
+              "Ajoutez le message d'erreur si vous avez l'exception exacte pour améliorer la précision de l'IA.",
+              "Utilisez l'analyse IA comme second avis avant d'appliquer une correction en production.",
+              "Chaque résultat explique la cause, la correction recommandée et un exemple avant/après."
+            ]}
+          />
         </div>
-
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-blue-950 sm:text-4xl">
-          Analysez votre code
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-700/70 sm:text-base">
-          CodeDoctor recherche d'abord les problèmes connus dans sa propre base de règles et vous explique directement comment les corriger.
-        </p>
       </section>
 
       <Card className="border-blue-100 p-5 sm:p-6">

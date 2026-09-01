@@ -4,6 +4,12 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  server: {
+    watch: {
+      usePolling: true,
+      ignored: ["**/.gitignore", "**/node_modules/**"],
+    },
+  },
   plugins: [
     react(),
     babel({

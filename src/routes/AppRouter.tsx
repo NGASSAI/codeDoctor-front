@@ -35,6 +35,7 @@ const ProfilPage = lazy(() => import("../pages/user/ProfilPage"));
 const ParametresPage = lazy(() => import("../pages/user/ParametresPage"));
 const DiscussionsPage = lazy(() => import("../pages/user/DiscussionsPage"));
 const ConversationPage = lazy(() => import("../pages/user/ConversationPage"));
+const CreerExperiencePage = lazy(() => import("../pages/user/CreerExperiencePage"));
 
 /* Admin */
 const NotificationsAdminPage = lazy(() => import("../pages/admin/NotificationsAdminPage"));
@@ -99,6 +100,14 @@ export default function AppRouter() {
             <Route path="/notifications" element={renderLazyPage(NotificationsPage)} />
             <Route path="/profil" element={renderLazyPage(ProfilPage)} />
             <Route path="/parametres" element={renderLazyPage(ParametresPage)} />
+            <Route
+  path="/experiences/nouvelle"
+  element={
+    <Suspense fallback={<TableSkeleton />}>
+      <PageTransition><CreerExperiencePage /></PageTransition>
+    </Suspense>
+  }
+/>
           </Route>
         </Route>
 
