@@ -6,6 +6,51 @@ const SOCKET_URL =
   "https://codedoctor-backend.onrender.com";
 
 let socket: Socket | null = null;
+let audioContext: AudioContext | null = null;
+
+function obtenirAudioContext(): AudioContext | null {
+  const AudioContextClass =
+    window.AudioContext ||
+    (
+      window as typeof window & {
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).webkitAudioContext;
+
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  return audioContext;
+}
+
+function activerAudioContext() {
+  const context = obtenirAudioContext();
+
+  if (!context) {
+    return;
+  }
+
+  if (context.state === "suspended") {
+    void context.resume();
+  }
+}
+
+if (typeof window !== "undefined") {
+  ["pointerdown", "keydown", "touchstart", "click"].forEach((eventName) => {
+    window.addEventListener(
+      eventName,
+      () => {
+        activerAudioContext();
+      },
+      { once: true }
+    );
+  });
+}
 
 export function obtenirSocket(): Socket | null {
   const token = localStorage.getItem("token");
@@ -100,60 +145,49 @@ export function ecouterNotification(
 
 function jouerSonNotification() {
   try {
-    const AudioContextClass =
-      window.AudioContext ||
-      (
-        window as typeof window & {
-          webkitAudioContext?: typeof AudioContext;
-        }
-      ).webkitAudioContext;
+    const context = obtenirAudioContext();
 
-    if (!AudioContextClass) {
+    if (!context) {
       return;
     }
 
-    const audioContext =
-      new AudioContextClass();
+    if (context.state === "suspended") {
+      void context.resume();
+    }
 
     const oscillator =
-      audioContext.createOscillator();
-
+      context.createOscillator();
     const gainNode =
-      audioContext.createGain();
+      context.createGain();
 
     oscillator.connect(gainNode);
-    gainNode.connect(
-      audioContext.destination
-    );
+    gainNode.connect(context.destination);
 
-    oscillator.frequency.value = 880;
-    oscillator.type = "sine";
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(
+      880,
+      context.currentTime
+    );
+    oscillator.frequency.exponentialRampToValueAtTime(
+      1320,
+      context.currentTime + 0.13
+    );
 
     gainNode.gain.setValueAtTime(
-      0.3,
-      audioContext.currentTime
+      0.0001,
+      context.currentTime
     );
-
     gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.3
+      0.18,
+      context.currentTime + 0.02
+    );
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.0001,
+      context.currentTime + 0.28
     );
 
-    oscillator.start(
-      audioContext.currentTime
-    );
-
-    oscillator.stop(
-      audioContext.currentTime + 0.3
-    );
-
-    oscillator.addEventListener(
-      "ended",
-      () => {
-        void audioContext.close();
-      },
-      { once: true }
-    );
+    oscillator.start(context.currentTime);
+    oscillator.stop(context.currentTime + 0.28);
   } catch (error) {
     console.error(
       "Erreur lors de la lecture du son de notification :",
