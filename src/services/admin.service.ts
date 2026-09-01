@@ -24,7 +24,7 @@ export async function obtenirNotificationsAdmin(
   limite = 20
 ): Promise<NotificationsAdminResponse> {
   const response = await api.get<NotificationsAdminResponse>(
-    "/admin/notifications",
+    "/notifications",
     {
       params: { page, limite },
     }
@@ -36,17 +36,17 @@ export async function obtenirNotificationsAdmin(
 export async function marquerNotificationCommeLueAdmin(
   id: string
 ): Promise<void> {
-  await api.patch(`/admin/notifications/${encodeURIComponent(id)}/lue`);
+  await api.patch(`/notifications/${encodeURIComponent(id)}/lue`);
 }
 
 export async function marquerToutesCommeLuesAdmin(): Promise<void> {
-  await api.patch("/admin/notifications/lues");
+  await api.patch("/notifications/lues");
 }
 
 export async function supprimerNotificationAdmin(
   id: string
 ): Promise<void> {
-  await api.delete(`/admin/notifications/${encodeURIComponent(id)}`);
+  await api.delete(`/notifications/${encodeURIComponent(id)}`);
 }
 
 /* =========================================================

@@ -1,4 +1,3 @@
-
 import { io, type Socket } from "socket.io-client";
 
 const SOCKET_URL =
@@ -8,47 +7,52 @@ const SOCKET_URL =
 let socket: Socket | null = null;
 let audioContext: AudioContext | null = null;
 
+/**
+ * Récupère ou instancie l'AudioContext de manière lazy.
+ */
 function obtenirAudioContext(): AudioContext | null {
-  const AudioContextClass =
-    window.AudioContext ||
-    (
-      window as typeof window & {
-        webkitAudioContext?: typeof AudioContext;
-      }
-    ).webkitAudioContext;
-
-  if (!AudioContextClass) {
-    return null;
-  }
+  if (typeof window === "undefined") return null;
 
   if (!audioContext) {
-    audioContext = new AudioContextClass();
+    const AudioContextClass =
+      window.AudioContext ||
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+
+    if (AudioContextClass) {
+      audioContext = new AudioContextClass();
+    }
   }
 
   return audioContext;
 }
 
-function activerAudioContext() {
-  const context = obtenirAudioContext();
-
-  if (!context) {
-    return;
-  }
-
-  if (context.state === "suspended") {
-    void context.resume();
+/**
+ * Débloque le contexte audio lors d'un geste utilisateur direct.
+ */
+function activerAudioSurInteraction() {
+  const ctx = obtenirAudioContext();
+  if (ctx && ctx.state === "suspended") {
+    void ctx.resume();
   }
 }
 
+// Attachement des écouteurs globaux
 if (typeof window !== "undefined") {
-  ["pointerdown", "keydown", "touchstart", "click"].forEach((eventName) => {
-    window.addEventListener(
-      eventName,
-      () => {
-        activerAudioContext();
-      },
-      { once: true }
-    );
+  const gestesUtilisateur = ["click", "keydown", "touchstart", "pointerdown"];
+
+  const handler = () => {
+    activerAudioSurInteraction();
+    gestesUtilisateur.forEach((event) => {
+      window.removeEventListener(event, handler);
+    });
+  };
+
+  gestesUtilisateur.forEach((event) => {
+    window.addEventListener(event, handler, { once: true });
   });
 }
 
@@ -61,9 +65,7 @@ export function obtenirSocket(): Socket | null {
 
   if (socket) {
     const authentification =
-      typeof socket.auth === "object"
-        ? socket.auth
-        : {};
+      typeof socket.auth === "object" ? socket.auth : {};
 
     if (authentification.token !== token) {
       socket.auth = {
@@ -88,17 +90,11 @@ export function obtenirSocket(): Socket | null {
   });
 
   socket.on("connect_error", (error) => {
-    console.error(
-      "Erreur de connexion Socket.IO :",
-      error.message
-    );
+    console.error("Erreur de connexion Socket.IO :", error.message);
   });
 
   socket.on("disconnect", (raison) => {
-    console.log(
-      "Socket.IO déconnecté :",
-      raison
-    );
+    console.log("Socket.IO déconnecté :", raison);
   });
 
   return socket;
@@ -123,23 +119,15 @@ export function ecouterNotification(
     return () => {};
   }
 
-  const gererNotification = (
-    notification: unknown
-  ) => {
+  const gererNotification = (notification: unknown) => {
     jouerSonNotification();
     callback(notification);
   };
 
-  currentSocket.on(
-    "notification",
-    gererNotification
-  );
+  currentSocket.on("notification", gererNotification);
 
   return () => {
-    currentSocket.off(
-      "notification",
-      gererNotification
-    );
+    currentSocket.off("notification", gererNotification);
   };
 }
 
@@ -147,36 +135,25 @@ function jouerSonNotification() {
   try {
     const context = obtenirAudioContext();
 
-    if (!context) {
+    // Si pas de support audio ou contexte suspendu (pas encore de geste), on ignore le son silencieusement sans crash
+    if (!context || context.state !== "running") {
       return;
     }
 
-    if (context.state === "suspended") {
-      void context.resume();
-    }
-
-    const oscillator =
-      context.createOscillator();
-    const gainNode =
-      context.createGain();
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
 
     oscillator.connect(gainNode);
     gainNode.connect(context.destination);
 
     oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(
-      880,
-      context.currentTime
-    );
+    oscillator.frequency.setValueAtTime(880, context.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(
       1320,
       context.currentTime + 0.13
     );
 
-    gainNode.gain.setValueAtTime(
-      0.0001,
-      context.currentTime
-    );
+    gainNode.gain.setValueAtTime(0.0001, context.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(
       0.18,
       context.currentTime + 0.02

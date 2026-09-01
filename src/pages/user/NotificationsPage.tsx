@@ -87,6 +87,7 @@ export default function NotificationsPage() {
   const [traitementId, setTraitementId] = useState<string | null>(null);
   const [erreur, setErreur] = useState("");
 
+  // Chargement des notifications au montage de la page
   useEffect(() => {
     void chargerNotifications();
   }, [chargerNotifications]);
@@ -102,21 +103,22 @@ export default function NotificationsPage() {
   );
 
   async function marquerCommeLue(notification: Notification) {
-    if (notification.lue) {
-      if (notification.lien) navigate(notification.lien);
-      return;
+    setErreur("");
+
+    // Mise à jour immédiate de l'état dans Zustand et l'API
+    if (!notification.lue) {
+      try {
+        await marquerCommeLueStore(notification.id);
+      } catch (error) {
+        console.error("Erreur marquage notification :", error);
+        setErreur("Impossible de marquer cette notification comme lue.");
+        return;
+      }
     }
 
-    try {
-      setTraitementId(notification.id);
-      setErreur("");
-      await marquerCommeLueStore(notification.id);
-      if (notification.lien) navigate(notification.lien);
-    } catch (error) {
-      console.error("Erreur marquage notification :", error);
-      setErreur("Impossible de marquer cette notification comme lue.");
-    } finally {
-      setTraitementId(null);
+    // Redirection immédiate si un lien est présent
+    if (notification.lien) {
+      navigate(notification.lien);
     }
   }
 
@@ -232,7 +234,7 @@ export default function NotificationsPage() {
         </Card>
       )}
 
-      {chargement ? (
+      {chargement && notifications.length === 0 ? (
         <Card className="p-12">
           <div className="flex flex-col items-center text-center">
             <Loader2 size={28} className="animate-spin text-zinc-400" />
@@ -311,12 +313,9 @@ export default function NotificationsPage() {
                       <button
                         type="button"
                         onClick={() => void marquerCommeLue(notification)}
-                        disabled={traitementId === notification.id}
-                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800"
                       >
-                        {traitementId === notification.id ? (
-                          <Loader2 size={15} className="animate-spin" />
-                        ) : notification.lien ? (
+                        {notification.lien ? (
                           <ChevronRight size={15} />
                         ) : (
                           <CheckCheck size={15} />
@@ -334,7 +333,11 @@ export default function NotificationsPage() {
                         disabled={traitementId === notification.id}
                         className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <Trash2 size={15} />
+                        {traitementId === notification.id ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={15} />
+                        )}
                         Supprimer
                       </button>
                     </div>
