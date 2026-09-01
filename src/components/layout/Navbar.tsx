@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   ArrowLeft,
   Bell,
@@ -8,7 +8,6 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { obtenirNotificationsAdmin } from "../../services/admin.service";
 import { useNotificationStore } from "../../stores/notification.store";
 import { useAuthStore } from "../../stores/auth.store";
 
@@ -28,8 +27,6 @@ export default function Navbar({
 
   const utilisateur = useAuthStore((state) => state.utilisateur);
 
-  const [notificationsAdminNonLues, setNotificationsAdminNonLues] = useState(0);
-
   const notificationsNonLues = useNotificationStore(
     (state) => state.nombreNonLues
   );
@@ -41,27 +38,11 @@ export default function Navbar({
   );
 
   useEffect(() => {
-    if (admin) {
-      void (async () => {
-        try {
-          const resultat = await obtenirNotificationsAdmin(1, 100);
-          setNotificationsAdminNonLues(
-            resultat.notifications.filter((notification) => !notification.lue).length
-          );
-        } catch {
-          setNotificationsAdminNonLues(0);
-        }
-      })();
-    } else {
-      void chargerCompteur();
-    }
-
+    void chargerCompteur();
     initialiserEcoute();
-  }, [admin, chargerCompteur, initialiserEcoute]);
+  }, [chargerCompteur, initialiserEcoute]);
 
-  const compteurNotifications = admin
-    ? notificationsAdminNonLues
-    : notificationsNonLues;
+  const compteurNotifications = notificationsNonLues;
 
   const estPageAccueil = admin
     ? location.pathname === "/admin" ||

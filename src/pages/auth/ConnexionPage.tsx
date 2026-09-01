@@ -401,7 +401,7 @@ export default function ConnexionPage() {
                       className="animate-spin"
                     />
 
-                    Connexion...
+                    Connexion....
                   </>
                 ) : (
                   <>
