@@ -360,7 +360,7 @@ function ExerciceCard({
   exercice: Exercice;
 }) {
   return (
-    <Card className="group flex h-full flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="group min-w-0 flex h-full flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
           <BookOpen size={19} />
@@ -386,7 +386,7 @@ function ExerciceCard({
           {exercice.title}
         </h2>
 
-        <div className="mt-4 rounded-xl bg-zinc-50 p-3">
+        <div className="mt-4 min-w-0 rounded-xl bg-zinc-50 p-3">
           <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
             Code à corriger
           </p>
