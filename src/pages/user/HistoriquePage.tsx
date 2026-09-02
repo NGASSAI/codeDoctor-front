@@ -421,7 +421,7 @@ export default function HistoriquePage() {
                     to={`/historique/${element.id}`}
                     className="
                       inline-flex items-center gap-2
-                      rounded-xl bg-zinc-950
+                      rounded-xl bg-blue-500
                       px-4 py-2.5
                       text-sm font-medium text-white
                       transition hover:bg-zinc-800
