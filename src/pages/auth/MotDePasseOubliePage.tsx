@@ -56,6 +56,7 @@ export default function MotDePasseOubliePage() {
 
   const [afficherPhrase, setAfficherPhrase] =
     useState(false);
+  const [sansPhraseConfiguree, setSansPhraseConfiguree] = useState(false);
 
   async function demanderIndice(
     event: FormEvent<HTMLFormElement>
@@ -65,6 +66,7 @@ export default function MotDePasseOubliePage() {
     setErreur("");
     setMessage("");
     setResetUrl("");
+    setSansPhraseConfiguree(false);
 
     const emailNormalise = email
       .trim()
@@ -105,28 +107,35 @@ export default function MotDePasseOubliePage() {
       );
 
       setEtape("phrase");
-    } catch (error: unknown) {
-      console.error(
-        "Erreur récupération compte :",
-        error
-      );
+      // ---------
+   } catch (error: unknown) {
+  console.error(
+    "Erreur récupération compte :",
+    error
+  );
 
-      if (
-        axios.isAxiosError<ErreurApi>(error)
-      ) {
-        setErreur(
-          error.response?.data?.erreur ??
-            error.response?.data?.message ??
-            "Impossible de traiter votre demande."
-        );
-      } else {
-        setErreur(
-          "Une erreur inattendue est survenue."
-        );
-      }
-    } finally {
-      setChargement(false);
+  if (axios.isAxiosError<ErreurApi>(error)) {
+    if (error.response?.status === 403) {
+      setSansPhraseConfiguree(true);
+      setErreur(
+        "Aucune phrase secrète de récupération n'est configurée pour ce compte. Si vous vous souvenez de votre mot de passe, connectez-vous puis configurez une phrase secrète depuis votre profil pour sécuriser votre compte à l'avenir."
+      );
+    } else {
+      setErreur(
+        error.response?.data?.erreur ??
+          error.response?.data?.message ??
+          "Impossible de traiter votre demande."
+      );
     }
+  } else {
+    setErreur(
+      "Une erreur inattendue est survenue."
+    );
+  }
+} finally {
+  setChargement(false);
+}
+    // ----------------
   }
 
   async function verifierPhrase(
@@ -223,7 +232,7 @@ export default function MotDePasseOubliePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-cyan-50 to-slate-50">
       {/* Bouton de retour */}
       <motion.button
         type="button"
@@ -244,7 +253,7 @@ export default function MotDePasseOubliePage() {
             to="/"
             className="mb-10 flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
               <Code2 size={20} />
             </div>
 
@@ -298,7 +307,14 @@ export default function MotDePasseOubliePage() {
                       {erreur}
                     </div>
                   )}
-
+{sansPhraseConfiguree && (
+  <Link
+    to="/connexion"
+    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+  >
+    Se connecter avec mon mot de passe
+  </Link>
+)}
                   <div>
                     <label
                       htmlFor="email"
@@ -326,7 +342,7 @@ export default function MotDePasseOubliePage() {
                   <button
                     type="submit"
                     disabled={chargement}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {chargement ? (
                       <>
@@ -453,7 +469,7 @@ export default function MotDePasseOubliePage() {
                   <button
                     type="submit"
                     disabled={chargement}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {chargement ? (
                       <>

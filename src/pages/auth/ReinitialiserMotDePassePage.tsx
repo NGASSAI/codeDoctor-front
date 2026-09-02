@@ -136,7 +136,7 @@ export default function ReinitialiserMotDePassePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-cyan-50 to-slate-50">
       {/* Bouton de retour */}
       <motion.button
         type="button"
@@ -155,7 +155,7 @@ export default function ReinitialiserMotDePassePage() {
             to="/"
             className="mb-10 flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
               <Code2 size={20} />
             </div>
 
@@ -331,7 +331,7 @@ export default function ReinitialiserMotDePassePage() {
                 disabled={
                   chargement || !token
                 }
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {chargement ? (
                   <>

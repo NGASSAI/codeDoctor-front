@@ -206,7 +206,7 @@ export default function VerificationEmailPage() {
 
                 <Link
                   to="/connexion"
-                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800"
                 >
                   Retour à la connexion
                 </Link>
