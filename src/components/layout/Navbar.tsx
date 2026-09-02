@@ -54,17 +54,11 @@ export default function Navbar({
     (state) => state.marquerToutesCommeLues
   );
 
-  useEffect(() => {
-    void chargerCompteur();
-    void chargerNotifications();
-
-    const desabonner: unknown = initialiserEcoute();
-    return () => {
-      if (typeof desabonner === "function") {
-        desabonner();
-      }
-    };
-  }, [chargerCompteur, chargerNotifications, initialiserEcoute]);
+useEffect(() => {
+  void chargerCompteur();
+  void chargerNotifications();
+  initialiserEcoute();
+}, [chargerCompteur, chargerNotifications, initialiserEcoute]);
 
   // Fermer le menu lors d'un clic à l'extérieur
   useEffect(() => {

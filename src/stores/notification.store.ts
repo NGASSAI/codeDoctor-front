@@ -12,24 +12,71 @@ import { ecouterNotification } from "../services/socket.service";
 
 import type { Notification } from "../types/notification";
 
-// Pré-chargement de l'audio pour éviter les blocages du navigateur
+// Instance audio partagée pour le son de notification
 let instanceAudio: HTMLAudioElement | null = null;
+
+// Référence vers la fonction de désabonnement socket active (session en cours)
+let arreterEcouteSocket: (() => void) | null = null;
+
+function obtenirAudio(): HTMLAudioElement | null {
+  if (typeof window === "undefined") return null;
+
+  if (!instanceAudio) {
+    instanceAudio = new Audio("/notification.mp3");
+    instanceAudio.preload = "auto";
+  }
+
+  return instanceAudio;
+}
 
 function jouerSonNotification() {
   try {
-    if (!instanceAudio) {
-      instanceAudio = new Audio("/notification.mp3");
-    }
-    instanceAudio.currentTime = 0;
-    const playPromise = instanceAudio.play();
+    const audio = obtenirAudio();
+    if (!audio) return;
+
+    audio.currentTime = 0;
+    const playPromise = audio.play();
+
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
-        console.warn("Son bloqué par le navigateur (interaction requise) :", err);
+        console.warn(
+          "Son bloqué par le navigateur (interaction requise) :",
+          err
+        );
       });
     }
   } catch (err) {
     console.error("Erreur lors de la lecture du son :", err);
   }
+}
+
+// Déblocage de l'audio au premier geste utilisateur (politique autoplay des navigateurs)
+if (typeof window !== "undefined") {
+  const gestesUtilisateur = ["click", "keydown", "touchstart", "pointerdown"];
+
+  const debloquerAudio = () => {
+    const audio = obtenirAudio();
+
+    if (audio) {
+      audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        })
+        .catch(() => {
+          // Ignoré : le prochain geste réessaiera si nécessaire
+        });
+    }
+
+    gestesUtilisateur.forEach((event) => {
+      window.removeEventListener(event, debloquerAudio);
+    });
+  };
+
+  gestesUtilisateur.forEach((event) => {
+    window.addEventListener(event, debloquerAudio, { once: true });
+  });
 }
 
 interface NotificationStoreState {
@@ -44,7 +91,7 @@ interface NotificationStoreState {
   marquerToutesCommeLues: () => Promise<void>;
   supprimerNotification: (id: string) => Promise<void>;
   ajouterNotification: (notification: Notification) => void;
-  initialiserEcoute: () => () => void;
+  initialiserEcoute: () => void;
   reinitialiser: () => void;
 }
 
@@ -92,11 +139,8 @@ export const useNotificationStore = create<NotificationStoreState>(
     async marquerCommeLue(id: string) {
       const etatActuel = get().notifications;
       const notificationCible = etatActuel.find((n) => n.id === id);
-
-      // Si la notification est déjà lue ou introuvable dans le state local
       const etaitNonLue = notificationCible ? !notificationCible.lue : true;
 
-      // 1. MISE À JOUR OPTIMISTE IMMÉDIATE (Cloche et liste à jour instantanément)
       set((state) => {
         const notifications = state.notifications.map((notification) =>
           notification.id === id
@@ -112,12 +156,10 @@ export const useNotificationStore = create<NotificationStoreState>(
         };
       });
 
-      // 2. APPEL API EN ARRIÈRE-PLAN
       try {
         await marquerNotificationCommeLueAPI(id);
       } catch (error) {
         console.error("Échec de la mise à jour serveur, annulation :", error);
-        // Rollback en cas d'erreur réseau
         set({
           notifications: etatActuel,
           nombreNonLues: get().nombreNonLues + (etaitNonLue ? 1 : 0),
@@ -129,7 +171,6 @@ export const useNotificationStore = create<NotificationStoreState>(
       const anciennesNotifications = get().notifications;
       const ancienCompteur = get().nombreNonLues;
 
-      // 1. MISE À JOUR OPTIMISTE IMMÉDIATE
       set((state) => ({
         notifications: state.notifications.map((notification) => ({
           ...notification,
@@ -138,7 +179,6 @@ export const useNotificationStore = create<NotificationStoreState>(
         nombreNonLues: 0,
       }));
 
-      // 2. APPEL API
       try {
         await marquerToutesCommeLuesAPI();
       } catch (error) {
@@ -155,7 +195,6 @@ export const useNotificationStore = create<NotificationStoreState>(
       const notificationASupprimer = etatActuel.find((n) => n.id === id);
       const etaitNonLue = notificationASupprimer && !notificationASupprimer.lue;
 
-      // 1. MISE À JOUR OPTIMISTE IMMÉDIATE
       set((state) => ({
         notifications: state.notifications.filter(
           (notification) => notification.id !== id
@@ -165,7 +204,6 @@ export const useNotificationStore = create<NotificationStoreState>(
           : state.nombreNonLues,
       }));
 
-      // 2. APPEL API
       try {
         await supprimerNotificationAPI(id);
       } catch (error) {
@@ -178,10 +216,8 @@ export const useNotificationStore = create<NotificationStoreState>(
     },
 
     ajouterNotification(notification: Notification) {
-      // 1. Jouer le son immédiatement
       jouerSonNotification();
 
-      // 2. Mettre à jour la liste et le compteur instantanément
       set((state) => {
         const existeDeja = state.notifications.some(
           (element) => element.id === notification.id
@@ -209,28 +245,26 @@ export const useNotificationStore = create<NotificationStoreState>(
 
     initialiserEcoute() {
       if (get().ecouteInitialisee) {
-        return () => {};
+        return;
       }
 
       set({ ecouteInitialisee: true });
 
-      const nettoyageSocket = ecouterNotification((notification) => {
+      arreterEcouteSocket = ecouterNotification((notification) => {
         if (!notification || typeof notification !== "object") {
           return;
         }
 
         get().ajouterNotification(notification as Notification);
       });
-
-      return () => {
-        if (typeof nettoyageSocket === "function") {
-          nettoyageSocket();
-        }
-        set({ ecouteInitialisee: false });
-      };
     },
 
     reinitialiser() {
+      if (arreterEcouteSocket) {
+        arreterEcouteSocket();
+        arreterEcouteSocket = null;
+      }
+
       set({
         notifications: [],
         nombreNonLues: 0,
