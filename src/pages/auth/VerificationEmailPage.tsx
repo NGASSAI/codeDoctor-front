@@ -117,7 +117,7 @@ export default function VerificationEmailPage() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-cyan-50 to-slate-50">
       {/* Bouton de retour */}
       <motion.button
         type="button"
@@ -136,7 +136,7 @@ export default function VerificationEmailPage() {
             to="/"
             className="mb-10 flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-600 text-white shadow-lg">
               <Code2 size={20} />
             </div>
 
@@ -182,7 +182,7 @@ export default function VerificationEmailPage() {
 
                 <Link
                   to="/connexion"
-                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                  className="mt-6 inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800"
                 >
                   Se connecter
                 </Link>
